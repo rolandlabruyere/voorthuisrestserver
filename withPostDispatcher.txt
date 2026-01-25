@@ -1,0 +1,81 @@
+unit ServerMethodsUnit1;
+
+interface
+
+uses System.SysUtils, System.Classes, Datasnap.DSServer, Datasnap.DSAuth, FormUnit1,
+     ServerFunctionUnit;
+
+type
+{$METHODINFO ON}
+  TServerMethods1 = class(TComponent)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    function restGetDispatcher(argumentList: string): string;
+    function restPostDispatcher(argumentList: string): string;
+
+  end;
+{$METHODINFO OFF}
+
+implementation
+
+uses System.StrUtils;
+
+function TServerMethods1.restGetDispatcher(argumentList: string): string;
+  const
+    restGetFunctions: TArray<String> = ['loadPage', 'getScreen', 'getDetailScreen', 'sessionSpecs'];
+  var
+    thisFunction, thisArgument, pageId, sessionId: String;
+    args: TStrings;
+begin
+{
+  in argumentlist staat de serverfunctie en de pagina die wordt opgevraagd, gescheiden door een puntkomma
+  dus bijv. : getScreen;indexPageCandleHolders
+  met het eerste argument wordt de index van de "case of" bepaald. Het tweede argument wordt desgewenst doorgegeven
+  en gebruikt om de juiste HTML-pagina op te halen.
+
+  Voordeel hiervan is dat de javascript code in "ServerFunctions.js" eenvoudig blijft. Slechts een GET en een POST functie.
+}
+  thisFunction := trim(copy(argumentList, 0, pos(';', argumentList) - 1));
+  thisArgument := trim(copy(argumentList, pos(';', argumentList) + 1, length(argumentList) - pos(';', argumentList)));
+
+  if (pos('?', thisArgument) > 0) then begin
+    pageId := trim(copy(thisArgument, 0, pos('?', thisArgument) - 1));
+    sessionId := trim(copy(thisArgument, pos('?', thisArgument) + 1, length(thisArgument) - pos('?', thisArgument)));
+    updateSessionSettings(sessionId);
+  end else
+    pageId := thisArgument;
+
+
+ ;
+
+  createShoppingCart(sessionId);
+
+  case IndexText(thisFunction, restGetFunctions) of
+    0: begin result := ServerFunctionUnit.loadPage(); if(thisArgument <> '') then updateSessionSettings(thisArgument); end;
+    1: result := ServerFunctionUnit.getScreen(pageId);
+    2: result := ServerFunctionUnit.getDetailScreen(pageId);
+    3: result := ServerFunctionUnit.storeSessionSettings(pageId);
+  end;
+end;
+
+function TServerMethods1.restPostDispatcher(argumentList: string): string;
+  const
+    restPostFunctions: TArray<String> = ['loadPage', 'getScreen', 'getDetailScreen'];
+  var
+    thisFunction, thisArgument: String;
+begin
+  thisFunction := copy(argumentList, 0, pos(';', argumentList) - 1);
+  thisArgument := copy(argumentList, pos(';', argumentList) + 1, length(argumentList) - pos(';', argumentList));
+  case IndexText(thisFunction, restPostFunctions) of
+    0: result := ServerFunctionUnit.loadPage();
+    1: result := ServerFunctionUnit.getScreen(thisArgument);
+    2: result := ServerFunctionUnit.getDetailScreen(thisArgument);
+  end;
+end;
+
+
+end.
+
+
