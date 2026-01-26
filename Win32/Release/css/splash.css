@@ -1,43 +1,83 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: roboto, helvetica, arial;
+  background-color: #cff0d1;
+}
+.pacifico-regular {
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
 .wrapper {
     width: 100%;
-    background-color: green;
 }
 .headerDiv {
     width: 100%;
 }
 .imageDiv {
-    width: 60%;
+    width: 70%;
 	float: right;
 	color: #1d6d74;
 }
 .textDiv {
-	position: fixed;
-	top: 300px;
-	left: 40px;
-    width: 30%;
-	float: left;
-	color: #1d6d74;
+	position: relative;
+	top:   250;
+	left:  40;
+    width: 60%;
+	float: center;
+	color: #b6c7ae;
 }
 
 .textHeaderDiv {
-	position: fixed;
-	top: 140px;
-	left: 25px;
-	font-size: 80px;
-	font-family: cooper black;
-}
-
-.subHeaderDiv {
-	position: fixed;
-	top: 250px;
-	left: 40px;
-	font-size: 30px;
+	position: relative;
+	top: 0;
+	left: 25;
+	font-size: 60px;
+	font-family: roboto;
 	font-style: italic;
+	color: #1d6d74;
+	/*text-shadow: 2px 2px 4px #1d6d74;*/
 }
 
-.controlDiv {
+.vertMenuDiv {
+	position: relative;
+	left: -180px;
+	top: 0px;
+	width: 300px;
+	font-size: 17px;
+	font-style: italic;
+	vertical-align: text-top;
+}
+.contentDiv {
+	/*position: absolute;
+	left: 200px;*/
+	width: 60%;
+	font-size: 17px;
+}
+.thumbNail {
+  height: 220px;
+  width: auto;
+	/*box-shadow: 8px 8px 20px #46846b;*/
+	border-radius: 5px;
+}
+.logoNail {
+	height: auto;
+	width: 200px;
+	display: inline-block;
+}
+
+
+.infoDiv {
+	justify-content: space-evenly;
+	align-items: center;
+	gap: 25px;
+	float: right;
+	display: flex; 
+	flex-flow: row wrap;
 	top: 10%;
-	left: 10%;
+	/*	left: 500px;*/
 }
 
 .myImage{
@@ -48,7 +88,7 @@
 }
 /* Slideshow container */
 .slideshow-container {
-  max-width: 600px;
+  max-width: 800px;
   /* position: relative;
   margin: auto;*/
 }
@@ -71,4 +111,28 @@
   padding: 8px 12px;
   position: absolute;
   top: 0;
+}
+.infoContainer {
+	font-size: 17px;
+	font-family: calibri, roboto, sans-serif, arial, helvetica;
+    background-color: rgb(150 200 200 / 0);  
+	float: right;
+	position: absolute;
+	left: -195px;
+	margin-left: 0px;
+	margin-right: 0px;
+	height: 720px;
+	width: 130px; 
+	flex-flow: row wrap;
+	justify-content: space-evenly;
+	padding: 30px;
+	gap: 15px;
+}
+
+.imgSplash {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;	
+  width: 65%;
+  height: auto;
 }

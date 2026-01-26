@@ -18,8 +18,6 @@ type
     ButtonOpenBrowser: TButton;
     adoVoorThuisCustomerSales: TADOConnection;
     adoConnHtmlPages: TADOConnection;
-    Timer30min: TTimer;
-    Timer30days: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure ApplicationEvents1Idle(Sender: TObject; var Done: Boolean);
     procedure ButtonStartClick(Sender: TObject);
@@ -93,12 +91,8 @@ begin
     Connected := true;
   end;
 
-  resetSession;
-  removeEmptyCarts;
-
-  //connection reset timer
-  Timer30min.Interval := 1000 * 60 * 5;
-  Timer30days.Interval := 1000 * 60 * 60;
+//  resetSession;
+//  removeEmptyCarts;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);

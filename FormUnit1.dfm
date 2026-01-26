@@ -79,14 +79,4 @@ object Form1: TForm1
     Left = 96
     Top = 160
   end
-  object Timer30min: TTimer
-    OnTimer = Timer30minTimer
-    Left = 328
-    Top = 128
-  end
-  object Timer30days: TTimer
-    OnTimer = Timer30daysTimer
-    Left = 328
-    Top = 96
-  end
 end

@@ -1,344 +1,65 @@
-<!-- !DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" -->
-<html>
+<!DOCTYPE html>
+<html lang="en" >
 <head>
-<title>Voor thuis webwinkel</title>
-<link rel="stylesheet" type="text/css" href="css/invoiceFlexBox.css" />
-<link rel="stylesheet" type="text/css" href="css/cartFlexBox.css" />
-<link rel="stylesheet" type="text/css" href="css/menu.css" />
-<link rel="stylesheet" type="text/css" href="css/detailpage.css" />
-<script type="text/javascript" src="js/base64.js"></script>
-<script type="text/javascript" src="js/json2.js"></script>
-<script type="text/javascript" src="js/serverfunctionexecutor.js"></script>
-<script type="text/javascript" src="js/connection.js"></script>
-<script type="text/javascript" src="<#serverfunctionsjs>"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"> </script>
-<script src="js/cookies.js"> </script>
-<script type="text/javascript">
-
-var loginRequired=false;
-var switchCart = false;
-/*
-function onLoad()
-{
-  //showTime();
-  //loginRequired=<#loginRequired>;
-  var thisIp;
-  
-  setConnection('<#host>', '<#port>', '<#urlpath>');
-  checkCookie();
-
-	$.getJSON("https://api.ipify.org?format=json", function(data) {
-		//$("#gfg").html(formatIp(data.ip));
-		//thisIp = formatIp(data.ip);
-		loadPage(formatIp(data.ip));
+	<meta charset="UTF-8">
+	<title>VoorThuis - techniek en electronica.</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+	<link rel="stylesheet" href="css/menuStyle.css">
+	<link rel="stylesheet" href="css/splash.css">
+	<link rel="stylesheet" href="css/slideshow.css">
+	<script type="application/javascript">var pubIp; function getIP(json){pubIp=json.ip;}</script>
+	<script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=getIP"></script>
+	<script type="text/javascript" src="js/base64.js"></script>
+	<script type="text/javascript" src="js/slideshow.js"></script>
+	<script type="text/javascript" src="js/json2.js"></script>
+	<script type="text/javascript" src="js/common.js"></script>
+	<script type="text/javascript" src="js/serverfunctionexecutor.js"></script>
+	<script type="text/javascript" src="js/connection.js"></script>
+	<script type="text/javascript" src="<#serverfunctionsjs>"></script>
+	<script type="text/javascript">
+		function getPage(itemIndex){
+			alert(itemIndex);
+			var content = serverMethods().RestDispatcher(itemIndex + "?" + formatIp(pubIp) + "?contentDiv");
+			var info = serverMethods().RestDispatcher((itemIndex + 20) + "?" + formatIp(pubIp) + "?infoDiv");
+			var restContent = content.result.split("|");
+			var infoContent = info.result.split("|");
+			document.getElementById(restResult[0]).innerHTML = restResult[1];
 		}
-	)
+	</script>
+	<script type="text/javascript">
+		function onLoad(){
+			setConnection('<#host>','<#port>','<#urlpath>');
+			var index = 0;
+			var content = serverMethods().RestDispatcher(index + "?" + formatIp(pubIp) + "?contentDiv");
+			var info = serverMethods().RestDispatcher((index + 20) + "?" + formatIp(pubIp) + "?infoDiv");
+			var menu = serverMethods().RestDispatcher((index + 40) + "?" + formatIp(pubIp) + "?vertMenuDiv");
+			var restContent = content.result.split("|");
+			var infoContent = info.result.split("|");
+			var menuContent = menu.result.split("|");
+			document.getElementById(restContent[0]).innerHTML = restContent[1];
+			document.getElementById(infoContent[0]).innerHTML = infoContent[1];
+			document.getElementById(menuContent[0]).innerHTML = menuContent[1];
 
-
- dit niet verwijderen   
-  if (loginRequired) {
-    showLogin(true);
-  } else {
-    showLogin(false);
-  }
-}
-*/
-function loadPage(user){
-  var valueField=document.getElementById('outputDiv');
-  var s = serverMethods().restGetDispatcher("loadPage;" + user);
-  valueField.innerHTML = s.result;
-  checkCart(user);
-}
-
-function retrieveSessionSpecs(myIp){
-  var s = serverMethods().restGetDispatcher("sessionSpecs;" + myIp);
-  return  s.result;
-}
-
-
-function serverMethods()
-{
-  return new <#classname>(connectionInfo);
-}
-
-function onReverseStringClick(elementId)
-{
-  var valueField=document.getElementById('outputDiv');
-  var user = getCookie("userid");
-  var s = serverMethods().restGetDispatcher("getScreen;" + elementId + "?" + user);
-  valueField.innerHTML =s.result;
-}
-
-function getDetailScreenClick(elementId)
-{
-  var valueField = document.getElementById('outputDiv');
-  var user = getCookie("userid");
-  var s = serverMethods().restGetDispatcher("getDetailScreen;" + elementId + "?" + user);
-  valueField.innerHTML = s.result;
-}
-function minusClick() {
-		var myField = document.getElementById("itemCount");
-		var count = myField.value;
-		count--;
-		count = count < 1 ? 1 : count;
-		myField.value = count;
-	}
-			
-function plusClick() {
-		var myField = document.getElementById("itemCount");
-		var count = myField.value;
-		count++;
-		myField.value = count;
-	}
-function checkValue(){
-		var myField = document.getElementById("itemCount");
-		var count = myField.value;
-		count = count < 1 ? 1 : count;
-		myField.value = count;
-	}
-
-function imageClick(myImgSrc, myTitle) {
-	var imageField = document.getElementById('imageCont');
-	var titleField = document.getElementById('textHeaderDiv');
-	var priceDiv = document.getElementById('retailPrice');
-	var user = getCookie("userid");
-
-	imageField.innerHTML = "<img class='bigImage' src='" + myImgSrc + "'/>";
-	titleField.innerHTML = myTitle;
-	document.getElementById('itemCount').value = 1;
-
-    var restCall = serverMethods().restGetDispatcher("getObjectPrice;" + myTitle + "?" + user);
-	priceDiv.innerHTML = restCall.result;
-}
-
-function placeItemsInCartClick(clickedObject) {
-	var titleFieldText = document.getElementById('textHeaderDiv').innerHTML;
-	var itemCountValue = document.getElementById('itemCount').value;
-	var shoppingCart = document.getElementById('shoppingCart');
-	var price = document.getElementById('retailPrice').innerHTML;
-	var user = getCookie("userid");
-	var objectStats = titleFieldText + "|" + itemCountValue + "|" + price;
-
-	try {
-	  var restCall = serverMethods().restGetDispatcher(clickedObject + ";" + objectStats + "?" + user);
-	} catch (error) {
-	  alert(error);
-	}
-	document.getElementById('itemCount').value = 1;
-	shoppingCart.style.backgroundColor = "rgb(200, 100, 100)"
-	listGroupedCartItems("ShoppingCartLine");
-	alert("artikel is succesvol aan de winkelwagen toegevoegd.");
-}
-
-function listGroupedCartItems(clickObject) {
-	var user = getCookie("userid");
-	var htmlObject = document.getElementById(clickObject);
-
-	var objectStats = "-";
-	var restCall = serverMethods().restGetDispatcher("listGroupedCartItems;" + objectStats + "?" + user);
-    htmlObject.innerHTML = restCall.result;
-	if (checkCart(user) == '1'){
-      shoppingCart.style.backgroundColor = "rgb(200, 100, 100)"
-	}
-}
-
-function checkCart(user) {
-	var shoppingCart = document.getElementById('shoppingCart');
-	var objectStats = "-";
-	
-    restCall = serverMethods().restGetDispatcher("checkCart;" + objectStats + "?" + user);
-	if (restCall.result == '1'){shoppingCart.style.backgroundColor = "rgb(200, 100, 100)";};
-	return restCall.result;
-}
-
-	
-function formatIp(myIp){
-	const ipParts = myIp.split(".");
-	for(let i = 0; i < ipParts.length; i++){
-	  switch (ipParts[i].length){
-	  case 1: ipParts[i] = "00" + ipParts[i]; break;
-	  case 2: ipParts[i] = "0" + ipParts[i]; break;
-	  default: ipParts[i];
-	  }
-	}
-	return ipParts[0] + "." + ipParts[1] + "." + ipParts[2] + "." + ipParts[3]
-}
-
-function getInvoiceDetailLines(elementId)
-{
-  var valueField = document.getElementById('outputDiv');
-  var user = getCookie("userid");
-  var s = serverMethods().restGetDispatcher("listGroupedInvoiceItems;" + elementId + "?" + user);
-  valueField.innerHTML = s.result;
-}
-
-function processOrderline(thisSrc, itemDescription){
-	var valueField = document.getElementById('outputDiv');
-	var user = getCookie("userid");
-	var serverFunction = "";
-	if(thisSrc.contains("bin"){
-		serverFunction = "deleteItemFromCart";
-		var s = serverMethods().restGetDispatcher(serverFunction +";" + itemDescription + "?" + user);
-	] else {
-		serverFunction = "actuateCartOrder";
-		var s = serverMethods().restGetDispatcher(serverFunction +";-?" + user);
-	}
-	valueField.innerHTML = s.result;
-}
-
-function minusClickExtended(Sender, amountId, totalPriceId) {
-		var myField = document.getElementById(Sender);
-		var myAmount = document.getElementById(amountId).innerHTML.replace(',', '.');
-		var myTotal = document.getElementById(totalPriceId);
-		var count = myField.value;
-		count--; count = count < 1 ? 1 : count;
-		myField.value = count;
-		myTotal.innerHTML = (myAmount * count).toFixed(2).toString().replace('.', ',');
-		document.getElementById("totalNumberItems").value = addAllItems();
-		document.getElementById("totalInput").innerHTML = addAllSubtotals();
-	}
-			
-function plusClickExtended(Sender, amountId, totalPriceId) {
-		var myField = document.getElementById(Sender);
-		var myAmount = document.getElementById(amountId).innerHTML.replace(',', '.');
-		var myTotal = document.getElementById(totalPriceId);
-		var count = myField.value;
-		count++;
-		myField.value = count;
-		myTotal.innerHTML = (myAmount * count).toFixed(2).toString().replace('.', ',');
-		document.getElementById("totalNumberItems").value = addAllItems();
-		document.getElementById("totalInput").innerHTML = addAllSubtotals();
-	}
-	
-function addAllItems(){
-	var thisTotal = 0;
-	var thisCounter = 0;
-
- while (true) {
-	try {
-			var thisValue = parseInt(document.getElementById("numberInput" + thisCounter).value);
-			thisTotal =  thisTotal + thisValue;
-			thisCounter++;
-		}catch (error){
-			return thisTotal.toString();
+			showSlides();
 		}
-	}
-}
 
-function addAllSubtotals(){
-	var myTotal = 0;
-	var myCounter = 0;
-
- while (true) {
-	try {
-			var myValue = Number(document.getElementById("tdInvoiceRowTotal" + myCounter).innerHTML.replace(',', '.'));
-			myTotal =  myTotal + myValue;
-			myCounter++;
-		}catch (error){
-			return myTotal.toFixed(2).toString().replace('.', ',');
+		function serverMethods(){
+			return new <#classname>(connectionInfo);
 		}
-	}
-}
-
-
-</script>
+	</script>
 </head>
-<header class="dark">
-  <nav role="navigation">
-    <a href="javascript:void(0);" class="ic menu" tabindex="1">
-      <span class="line"></span>
-      <span class="line"></span>
-      <span class="line"></span>
-    </a>
-    <a href="javascript:void(0);" class="ic close"></a>
-    <ul class="main-nav">
-      <li class="top-level-link">
-        <a class="mega-menu"><span>VoorThuis familie-atelier</span></a>      
-        <div class="sub-menu-block">
-          <div class="row">
-            <div class="col-md-4 col-lg-4 col-sm-4">
-              <!--<h2 class="sub-menu-head">Clothing</h2>-->
-              <ul class="sub-menu-lists">
-                <li><a class="hoverClass" id="splashPage" onclick="onReverseStringClick(id);">Home</a></li>
-                <li><a class="hoverClass" id="splashPage" onclick="onReverseStringClick(id);">Inloggen</a></li>
-              </ul>           
-            </div>
-        </div>
-      </li> 
-      
-      <li class="top-level-link">
-        <a class="mega-menu"><span>Producten</span></a>
-        <div class="sub-menu-block">
-          <div class="row">
-            <div class="col-md-4 col-lg-4 col-sm-4">
-              <h2><a class="hoverClass" id="indexPage1" onclick="onReverseStringClick(id);" >Webshop</a></h2>
-              <ul class="sub-menu-lists">
-                <li><a class="hoverClass" id="indexPageDinerCandle" onclick="onReverseStringClick(id);">Dinerkaarsen</a></li>
-                <li><a class="hoverClass" id="indexPageCandleHolders" onclick="onReverseStringClick(id);">Kandelaars en standaards</a></li>
-                <li><a class="hoverClass" id="indexPageWindLights" onclick="onReverseStringClick(id);">Windlichten</a></li>
-                <li><a class="hoverClass" id="bolkaarsen" onclick="onReverseStringClick(id);">Bolkaarsen</a></li>
-                <li><a class="hoverClass" id="decoratieveKaarsen" onclick="onReverseStringClick(id);">Decoratieve kaarsen</a></li>
-                <li><a class="hoverClass" id="lichaamsKaarsen" onclick="onReverseStringClick(id);">Lichaamskaarsen</a></li>
-                <li><a class="hoverClass" id="floraKaarsen" onclick="onReverseStringClick(id);">Flora kaarsen</a></li>
-                <li><a class="hoverClass" id="faunaKaarsen" onclick="onReverseStringClick(id);">Fauna kaarsen</a></li>
-                <li><a class="hoverClass" id="themaKaarsen" onclick="onReverseStringClick(id);">Themakaarsen</a></li>
-                <li><a class="hoverClass" id="diversen" onclick="onReverseStringClick(id);">Diversen</a></li>
-              </ul>           
-            </div>
-          </div>
-        </div>
-      </li>
-      <li id="ShoppingCartLine" class="top-level-link" onclick="getInvoiceDetailLines(id);" >
-        <a><span id="shoppingCart"  onmouseover="listGroupedCartItems('ShoppingCartLine');">Winkelwagen<span></a>
-      </li>
-      <li class="top-level-link">
-        <a class="mega-menu"><span>Over ons</span></a>
-        <div class="sub-menu-block">
-          <div class="row">
-            <div class="col-md-4 col-lg-4 col-sm-4">
-              <h2 class="sub-menu-head">Bedrijf</h2>
-              <ul class="sub-menu-lists">
-                <li><a class="hoverClass" id="Bedrijfsfilosofie" onclick="onReverseStringClick(id);">Bedrijfsfilosofie</a></li>
-                <li><a class="hoverClass" id="Missie" onclick="onReverseStringClick(id);">Missie</a></li>
-                <li><a class="hoverClass" id="Community" onclick="onReverseStringClick(id);">Community</a></li>
-                <li><a class="hoverClass" id="Team" onclick="onReverseStringClick(id);">Team</a></li>
-              </ul>           
-            </div>
 
-            <div class="col-md-4 col-lg-4 col-sm-4">
-              <h2 class="sub-menu-head">Algemeen</h2>
-              <ul class="sub-menu-lists">
-                <li><a class="hoverClass" id="cookies" onclick="onReverseStringClick(id);">Cookie beleid</a></li>
-                <li><a class="hoverClass" id="retouren" onclick="onReverseStringClick(id);">Retourbeleid</a></li>
-                <li><a class="hoverClass" id="aankopen" onclick="onReverseStringClick(id);">Aankoopbeleid</a></li>
-              </ul>
-            </div>
-
-<!--
-
--->			
-            <div class="col-md-4 col-lg-4 col-sm-4">
-              <h2 class="sub-menu-head">Media</h2>
-              <ul class="sub-menu-lists">
-                <li><a class="hoverClass" id="Nieuws" onclick="onReverseStringClick(id);">Nieuws</a></li>
-                <li><a class="hoverClass" id="Evenementen" onclick="onReverseStringClick(id);">Evenementen</a></li>
-                <li><a class="hoverClass" id="Instagram" onclick="onReverseStringClick(id);">Instagram</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </li>
-      <li class="top-level-link">
-        <a><span>Contact</span></a>      
-      </li>
-    </ul> 
-  </nav>
-</header>  
-<!-- <body onload="onLoad()" >-->
-<body onload="checkCookie()" >
-    <div id="outputDiv" class="outputDiv">
-        hier is de div
-    </div>
-    <!--<div id="floatDiv" class="floatDiv" ></div>-->
+<body onload="onLoad()">
+	<div id="menu"></div>
+	<script src='js/reactProdMin.js'></script>
+	<script src='js/react-DomProdMin.js'></script>
+	<script src='js/gsapMin.js'></script>
+	<script  src="js/menuScript.js"></script>
+	<div class="divWrapper" id="divWrapper">
+		<!--<div class="vertMenuDiv" id="vertMenuDiv">vertikaal menu</div>-->
+		<div class="infoContainer" id="vertMenuDiv">vertikaal menu</div>
+		<div class="contentDiv" id="contentDiv"></div>
+		<div class="infoDiv" id="infoDiv">info div</div>
+	</div>
 </body>
 </html>
