@@ -97,6 +97,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <DesignClass>TWebModule</DesignClass>
         </DCCReference>
         <DCCReference Include="ServerFunctionUnit.pas"/>
+        <DCCReference Include="OverlayUnits\CommonFunctionUnit.pas"/>
+        <DCCReference Include="OverlayUnits\CommonProcedureUnit.pas"/>
+        <DCCReference Include="OverlayUnits\JasonConstructorUnit.pas"/>
+        <DCCReference Include="OverlayUnits\JasonReaderUnit.pas"/>
+        <DCCReference Include="OverlayUnits\RestUnit.pas"/>
+        <DCCReference Include="OverlayUnits\FindFiles.pas"/>
         <None Include="js\base64.js"/>
         <None Include="js\ServerFunctionExecutor.js"/>
         <None Include="js\json2.js"/>
@@ -244,6 +250,12 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="js\ServerFunctions.js" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="templates\ServerFunctionInvoker.html" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
@@ -256,19 +268,13 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="css\main.css" Configuration="Release" Class="ProjectFile">
-                    <Platform Name="Win32">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="css\main.css" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="js\ServerFunctions.js" Configuration="Release" Class="ProjectFile">
+                <DeployFile LocalName="css\main.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
