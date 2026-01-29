@@ -120,10 +120,10 @@ begin
   thisQuery.Connection := form1.adoConnHtmlPages;
   with thisQuery do begin
     SQL.Clear;
-    SQL.add('select * from TB100_HtmlPages where id = :loadItem');
+    SQL.add('select inlineHtml from TB100_HtmlPages where id = :loadItem');
     Parameters.ParamByName('loadItem').Value := htmlItem;
     open;
-    Result := fieldByName('InlineHtml').AsString;
+    Result := fields[0].AsString;
   end;
 end;
 

@@ -24,8 +24,6 @@ type
     procedure ButtonStopClick(Sender: TObject);
     procedure ButtonOpenBrowserClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure Timer30minTimer(Sender: TObject);
-    procedure Timer30daysTimer(Sender: TObject);
   private
     FServer: TIdHTTPWebBrokerBridge;
     procedure StartServer;
@@ -110,15 +108,5 @@ begin
   end;
 end;
 
-procedure TForm1.Timer30daysTimer(Sender: TObject);
-begin
-  //removeUnpayedCarts;
-end;
-
-procedure TForm1.Timer30minTimer(Sender: TObject);
-begin
-  resetSession;
-  removeEmptyCarts;
-end;
 
 end.

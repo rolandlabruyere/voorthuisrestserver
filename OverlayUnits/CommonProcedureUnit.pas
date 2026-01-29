@@ -20,7 +20,7 @@ implementation
   var
     F: TextFile;
   begin
-    AssignFile(F, 'c:\Git\VoorThuisRestSupplies\log\session.log');
+    AssignFile(F, 'c:\GitHub\voorthuisrestserver\log\session.log');
     try
       Append(F);
     except

@@ -1,64 +1,59 @@
 const { useRef, useState, useEffect, createRef } = React;
 const menuColor = "#1d6d74";
+const calcColor = "#dd6d74";
 /*--------------------
 Items
 --------------------*/
 const items = [
 {
   name: "home",
-  id:	"home",
+  id:	"homeId",
   color: menuColor,
   href: "#"
 },
 {
-  name: "kaarsen",
-  id:	"kaarsen",
-  color: menuColor,
+  name: "voedingstrafo",
+  id:	"powerTrafoId",
+  color: calcColor,
   href: "#" 
 },
 {
-  name: "haakwerk",
-  id:	"haakwerk",
-  color: menuColor,
+  name: "uitgangstrafo",
+  id:	"ouputTrafoId",
+  color: calcColor,
   href: "#" 
 },
 {
-  name: "macrame",
-  id:	"macrame",
-  color: menuColor,
+  name: "smoorspoel",
+  id:	"filterChokeId",
+  color: calcColor,
   href: "#" 
 },
 {
-  name: "bedrijven",
-  id:	"bedrijven",
+  name: "wetenswaardigheden",
+  id:	"miscId",
   color: menuColor,
   href: "#" 
 },
 {
   name: "diversen",
-  id:	"diversen",
+  id:	"diversId",
   color: menuColor,
   href: "#" 
 },
 {
   name: "winkelwagen",
-  id:	"winkelwagen",
+  id:	"shoppingCartId",
   color: menuColor,
   href: "#" 
 },
 {
   name: "zoeken",
-  id:	"zoeken",
+  id:	"searchId",
   color: menuColor,
   href: "#" 
-},
-{
-  name: "filosofie",
-  id:	"addresses",
-  color: menuColor,
-  href: "#" }
-  
-  ];
+}
+];
 
 /*--------------------
 Menu
@@ -118,17 +113,16 @@ const Menu = ({ items }) => {
       className: `item ${active === menuIndex ? 'active' : ''}`,
       onMouseEnter: () => {setActive(menuIndex);},
       onClick: () => {
-			//alert(item.name);
 			var content = serverMethods().RestDispatcher(item.name + "?" + formatIp(pubIp) + "?contentDiv");
-			var info = serverMethods().RestDispatcher(item.name + "Info?" + formatIp(pubIp) + "?infoDiv");
-			var menu = serverMethods().RestDispatcher(item.name + "Vmenu?" + formatIp(pubIp) + "?vertMenuDiv");
+			//var info = serverMethods().RestDispatcher(item.name + "Info?" + formatIp(pubIp) + "?infoDiv");
+			//var menu = serverMethods().RestDispatcher(item.name + "Vmenu?" + formatIp(pubIp) + "?vertMenuDiv");
 			var restContent = content.result.split("|");
-			var infoContent = info.result.split("|");
-			var menuContent = menu.result.split("|");
+			//var infoContent = info.result.split("|");
+			//var menuContent = menu.result.split("|");
 			document.getElementById(restContent[0]).innerHTML = restContent[1];
-			document.getElementById(infoContent[0]).innerHTML = infoContent[1];
-			document.getElementById(menuContent[0]).innerHTML = menuContent[1];
-			if(menuIndex == 0) showSlides();
+			//document.getElementById(infoContent[0]).innerHTML = infoContent[1];
+			//document.getElementById(menuContent[0]).innerHTML = menuContent[1];
+			//if(menuIndex == 0) showSlides();
 		 },
       href: item.href 
 },

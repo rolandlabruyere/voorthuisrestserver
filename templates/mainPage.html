@@ -29,18 +29,17 @@
 	<script type="text/javascript">
 		function onLoad(){
 			setConnection('<#host>','<#port>','<#urlpath>');
-			var index = 0;
-			var content = serverMethods().RestDispatcher(index + "?" + formatIp(pubIp) + "?contentDiv");
-			var info = serverMethods().RestDispatcher((index + 20) + "?" + formatIp(pubIp) + "?infoDiv");
-			var menu = serverMethods().RestDispatcher((index + 40) + "?" + formatIp(pubIp) + "?vertMenuDiv");
+			var content = serverMethods().RestDispatcher("home?" + formatIp(pubIp) + "?contentDiv");
+			//var info = serverMethods().RestDispatcher((index + 20) + "?" + formatIp(pubIp) + "?infoDiv");
+			//var menu = serverMethods().RestDispatcher((index + 40) + "?" + formatIp(pubIp) + "?vertMenuDiv");
 			var restContent = content.result.split("|");
-			var infoContent = info.result.split("|");
-			var menuContent = menu.result.split("|");
+			//var infoContent = info.result.split("|");
+			//var menuContent = menu.result.split("|");
 			document.getElementById(restContent[0]).innerHTML = restContent[1];
-			document.getElementById(infoContent[0]).innerHTML = infoContent[1];
-			document.getElementById(menuContent[0]).innerHTML = menuContent[1];
+			//document.getElementById(infoContent[0]).innerHTML = infoContent[1];
+			//document.getElementById(menuContent[0]).innerHTML = menuContent[1];
 
-			showSlides();
+			//showSlides();
 		}
 
 		function serverMethods(){
@@ -58,7 +57,7 @@
 	<div class="divWrapper" id="divWrapper">
 		<!--<div class="vertMenuDiv" id="vertMenuDiv">vertikaal menu</div>-->
 		<div class="infoContainer" id="vertMenuDiv">vertikaal menu</div>
-		<div class="contentDiv" id="contentDiv"></div>
+		<div class="contentDiv" id="contentDiv">contentDiv</div>
 		<div class="infoDiv" id="infoDiv">info div</div>
 	</div>
 </body>
