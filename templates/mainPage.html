@@ -17,38 +17,21 @@
 	<script type="text/javascript" src="js/connection.js"></script>
 	<script type="text/javascript" src="<#serverfunctionsjs>"></script>
 	<script type="text/javascript">
-		function getPage(itemIndex){
-			alert(itemIndex);
-			var content = serverMethods().RestDispatcher(itemIndex + "?" + formatIp(pubIp) + "?contentDiv");
-			var info = serverMethods().RestDispatcher((itemIndex + 20) + "?" + formatIp(pubIp) + "?infoDiv");
+		var objectBin = 1;
+		
+		function getPage(itemLabel){
+			var content = serverMethods().RestDispatcher(itemLabel + "?" + formatIp(pubIp) + "?contentDiv?" + objectBin);
 			var restContent = content.result.split("|");
-			var infoContent = info.result.split("|");
-			document.getElementById(restResult[0]).innerHTML = restResult[1];
-		}
-	</script>
-	<script type="text/javascript">
-		function onLoad(){
-			setConnection('<#host>','<#port>','<#urlpath>');
-			var content = serverMethods().RestDispatcher("home?" + formatIp(pubIp) + "?contentDiv");
-			//var info = serverMethods().RestDispatcher((index + 20) + "?" + formatIp(pubIp) + "?infoDiv");
-			//var menu = serverMethods().RestDispatcher((index + 40) + "?" + formatIp(pubIp) + "?vertMenuDiv");
-			var restContent = content.result.split("|");
-			//var infoContent = info.result.split("|");
-			//var menuContent = menu.result.split("|");
 			document.getElementById(restContent[0]).innerHTML = restContent[1];
-			//document.getElementById(infoContent[0]).innerHTML = infoContent[1];
-			//document.getElementById(menuContent[0]).innerHTML = menuContent[1];
-
-			//showSlides();
 		}
-
+		
 		function serverMethods(){
 			return new <#classname>(connectionInfo);
 		}
 	</script>
 </head>
 
-<body onload="onLoad()">
+<body onload="getPage('home')">
 	<div id="menu"></div>
 	<script src='js/reactProdMin.js'></script>
 	<script src='js/react-DomProdMin.js'></script>

@@ -1,6 +1,7 @@
 const { useRef, useState, useEffect, createRef } = React;
 const menuColor = "#1d6d74";
 const calcColor = "#dd6d74";
+const settingsColor = "#84cc4d";
 /*--------------------
 Items
 --------------------*/
@@ -51,6 +52,12 @@ const items = [
   name: "zoeken",
   id:	"searchId",
   color: menuColor,
+  href: "#" 
+},
+{
+  name: "instellingen",
+  id:	"settings",
+  color: settingsColor,
   href: "#" 
 }
 ];
@@ -113,16 +120,7 @@ const Menu = ({ items }) => {
       className: `item ${active === menuIndex ? 'active' : ''}`,
       onMouseEnter: () => {setActive(menuIndex);},
       onClick: () => {
-			var content = serverMethods().RestDispatcher(item.name + "?" + formatIp(pubIp) + "?contentDiv");
-			//var info = serverMethods().RestDispatcher(item.name + "Info?" + formatIp(pubIp) + "?infoDiv");
-			//var menu = serverMethods().RestDispatcher(item.name + "Vmenu?" + formatIp(pubIp) + "?vertMenuDiv");
-			var restContent = content.result.split("|");
-			//var infoContent = info.result.split("|");
-			//var menuContent = menu.result.split("|");
-			document.getElementById(restContent[0]).innerHTML = restContent[1];
-			//document.getElementById(infoContent[0]).innerHTML = infoContent[1];
-			//document.getElementById(menuContent[0]).innerHTML = menuContent[1];
-			//if(menuIndex == 0) showSlides();
+			getPage(item.name)
 		 },
       href: item.href 
 },

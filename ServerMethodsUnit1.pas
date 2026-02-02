@@ -36,16 +36,16 @@ begin
 
   storeSessionSettings(passThruItem[1]);
 
-  menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'filosofie',
-                'homeInfo', 'kaarsenInfo', 'haakwerkInfo', 'macrameInfo', 'bedrijvenInfo', 'diversenInfo', 'winkelwagenInfo', 'zoekenInfo', 'filosofieInfo',
+  menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
+                'savePtrafoSpecs', 'kaarsenInfo', 'haakwerkInfo', 'macrameInfo', 'bedrijvenInfo', 'diversenInfo', 'winkelwagenInfo', 'zoekenInfo', 'filosofieInfo',
                 'homeVmenu', 'kaarsenVmenu', 'haakwerkVmenu', 'macrameVmenu', 'bedrijvenVmenu', 'diversenVmenu', 'winkelwagenVmenu', 'zoekenVmenu', 'filosofieVmenu',
                 'indexPageDinerCandle', 'indexPageDinerCandleInfo', 'indexPageDinerCandleVmenu'
                ];
-  writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] );
+  writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
   case IndexStr(passThruItem[0], menuIndex) of
     0   : Result := getScreen('splashPage');
-    1   : Result := getScreen('powerTrafoSettings');
+    1   : Result := getScreen('pTrafoSpecs');
     2   : Result := getScreen('logo');
     3   : Result := getScreen('logo');
     4   : Result := getScreen('logo');
@@ -53,7 +53,7 @@ begin
     6   : Result := getScreen('logo');
     7   : Result := getScreen('logo');
     8   : Result := getScreen('logo');
-    9   : Result := getScreen('splashPageInfo');
+    9   : Result := constructPowerTrafo(StrToInt(passThruItem[3]));
     10  : Result := getScreen('indexPageKaars');
     //11  : Result := createJsonPayment(25.00, 'VT202503120001');
     //12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
@@ -77,7 +77,6 @@ begin
     else result := 'Geen item gevonden';
    end;
      Result := passThruItem[2] + '|' + Result;
-      writelog(result);
 end;
 
 

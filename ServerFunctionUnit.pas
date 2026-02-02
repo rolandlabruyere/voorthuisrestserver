@@ -1,7 +1,7 @@
 unit ServerFunctionUnit;
 
 interface
-  uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, System.StrUtils;
+  uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, System.StrUtils, system.math, CommonProcedureUnit;
 
   function  loadPage(): string;
   function  getScreen(htmlItem: string): string;
@@ -16,8 +16,9 @@ interface
   function  listGroupedCartItems(sessionId: string): string;
   function  checkCart(sessionId: string): string;
   function  listGroupedInvoiceItems(sessionId: string): string;
+  function constructPowerTrafo(value: integer): string;
+function binPower(base, exponent: integer): integer;
 
-  procedure writeLog(writeItem: string);
   procedure resetSession();
   procedure createShoppingCart(sessionId: string);
   procedure removeEmptyCarts();
@@ -127,6 +128,84 @@ begin
   end;
 end;
 
+function constructPowerTrafo(value: integer): string;
+  var
+  thisQuery: tAdoQuery;
+  T: integer;
+  htmlSet: array[0..5] of string;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+  thisQuery.Connection := form1.adoConnHtmlPages;
+  {
+  <div class="infoContainerMedium">
+<table >
+  <tr>
+    <th class = "header">Voedingstrafo details</th>
+    <th class = "header"></th>
+  </tr>
+  <tr>
+    <td class = "rowTitle">secundair voltage</td>
+    <td class = "cell"><input type="text" id="secWikkVolt" ></td>
+  </tr>
+  <tr>
+    <td class = "rowTitle">secundair amperage</td>
+    <td class = "cell"><input type="text" id="secWikkAmp" ></td>
+  </tr>
+  <tr>
+    <td  class = "rowTitle">middenaftakking</td>
+    <td class = "cell"><input type="text" id="SecMiddenAftak" value = "Ja"></td>
+  </tr>
+  <tr>
+    <td  class = "rowTitle">wikkeling 6.3v</td>
+    <td class = "cell"><input type="checkbox" id="fil6.3" onclick="objectBin= objectBin ^= 4"></td>
+  </tr>
+  <tr>
+    <td  class = "rowTitle">wikkeling 5v</td>
+    <td class = "cell"><input type="checkbox" id="fil5.0" onclick="objectBin= objectBin ^= 8"></td>
+  </tr>
+  <tr>
+    <td  class = "rowTitle">middenaftakking tbv gloeidraden</td>
+    <td class = "cell"><input type="checkbox" id="filCentTap" onclick="objectBin= objectBin ^= 16"></td>
+  </tr>
+  <tr>
+    <td  class = "rowTitle">aftakking 50v</td>
+    <td class = "cell"><input type="checkbox" id="tap50v" onclick="objectBin= objectBin ^= 32"></td>
+  </tr>
+  <tr>
+    <td  class = "submitTitle"></td>
+    <td class = "submitCell"></td>
+  </tr>
+  <tr>
+    <td  class = "submitTitle"></td>
+    <td class = "submitCell"><button type="button" onclick="getPage('savePtrafoSpecs')">Opslaan</button></td>
+  </tr>
+</table>
+</div>
+
+
+  }
+
+  writelog('constructPowerTrafo');
+
+  for T := 0 to 5 do begin
+    if (value - binPower(2, t) > 0) then begin
+      htmlSet[t] := 'true';
+      value := value - binPower(2, t);
+    end;
+    writelog(inttostr(t));
+  end;
+//  for T := 1 to 6 do
+//    writelog (BoolToStr(switchSet[t]));
+
+  result := 'terug van weggeweest';
+
+//  with thisQuery do begin
+//    SQL.Clear;
+//    SQL.add('select inlineHtml from TB100_HtmlPages where id = :loadItem');
+//    Parameters.ParamByName('loadItem').Value := htmlItem;
+//    open;
+//    Result := fields[0].AsString;
+end;
 
 //getDetailScreenClick(elementId)
 function getDetailScreen(htmlItem: string): string;
@@ -440,16 +519,6 @@ end;
   *************************************************************************************************
  }
 
-procedure writeLog(writeItem: string);
-var
-  F: TextFile;
-begin
-  AssignFile(F, 'c:\git\voorthuisrestserver\log\logfile.log');
-  Rewrite(F);
-  WriteLn(F, writeItem);
-  CloseFile(F);
-end;
-
 procedure resetSession();
 var
   thisQuery: tAdoQuery;
@@ -505,6 +574,16 @@ begin
    ListOfStrings.Delimiter       := Delimiter;
    ListOfStrings.StrictDelimiter := True;
    ListOfStrings.DelimitedText   := Str;
+end;
+function binPower(base, exponent: integer): integer;
+var
+  I: integer;
+begin
+  for I := 0 to exponent do
+    if I = 0 then
+      result := 1
+    else
+      result := base * 2;
 end;
 
 end.
