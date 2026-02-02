@@ -1,0 +1,10 @@
+{
+"amount" : {
+"currency": "EUR", 
+"value": "35.00"
+}, 
+"description": "Order #VT202503120001", 
+"redirectUrl": "https://www.voor-thuis-shop.nl/order/VT202503120001/", 
+"webhookUrl": "https://www.voor-thuis-shop.nl/payments/webhook/", 
+"metadata": "{\"order_id\": \"VT202503120001\"}"
+}
