@@ -45,7 +45,7 @@ begin
 
   case IndexStr(passThruItem[0], menuIndex) of
     0   : Result := getScreen('splashPage');
-    1   : Result := getScreen('pTrafoSpecs');
+    1   : Result := getScreen('powerTrafoSpecs');
     2   : Result := getScreen('logo');
     3   : Result := getScreen('logo');
     4   : Result := getScreen('logo');
@@ -53,10 +53,10 @@ begin
     6   : Result := getScreen('logo');
     7   : Result := getScreen('logo');
     8   : Result := getScreen('logo');
-    9   : Result := constructPowerTrafo(StrToInt(passThruItem[3]));
+    9   : Result := constructPowerTrafo(passThruItem[1], StrToInt(passThruItem[3]));
     10  : Result := getScreen('indexPageKaars');
-    //11  : Result := createJsonPayment(25.00, 'VT202503120001');
-    //12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
+//    11  : Result := createJsonPayment(25.00, 'VT202503120001');
+//    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
     13  : Result := getScreen('indexPageCandleHolders');
     14  : Result := getScreen('DetailPage');
     15  : Result := getScreen('shoppingCartItems');

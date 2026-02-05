@@ -32,7 +32,7 @@ implementation
     newTimestamp := generateTimestamp;
     with thisQuery do begin
       SQL.Clear;
-      SQL.add('insert into TB900_SessionSettings(Ip, SessionActive, Timestamp) values (:ip, :SessionActive, :timestamp)');
+      SQL.add('insert into TB900_Session_Settings(Ip, SessionActive, Timestamp) values (:ip, :SessionActive, :timestamp)');
       Parameters.ParamByName('ip').Value := myIp;
       Parameters.ParamByName('SessionActive').Value := true;
       Parameters.ParamByName('timestamp').Value := newTimestamp;
@@ -57,7 +57,7 @@ implementation
 
     with thisQuery do begin
       SQL.Clear;
-      SQL.add('update TB900_SessionSettings set sessionActive = true, timestamp = :timestamp where Ip = :ip');
+      SQL.add('update TB900_Session_Settings set sessionActive = true, timestamp = :timestamp where Ip = :ip');
       Parameters.ParamByName('ip').Value := myIp;
       Parameters.ParamByName('timestamp').Value := generateTimestamp;
       execSQL;

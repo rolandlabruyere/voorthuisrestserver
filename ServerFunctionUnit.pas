@@ -1,117 +1,21 @@
 unit ServerFunctionUnit;
 
 interface
-  uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, System.StrUtils, system.math, CommonProcedureUnit;
+  uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, System.StrUtils, system.math,
+       CommonProcedureUnit, CommonFunctionUnit;
 
-  function  loadPage(): string;
-  function  getScreen(htmlItem: string): string;
-  function  getDetailScreen(htmlItem: string): string;
-  function  storeSessionSettings(myIp: string): string;
-  function  updateSessionSettings(mySessId: string): string;
-  function  generateSessionId(): string;
-  function  generateTimestamp(offset: integer = 0): string;
-  function  generateTimestampMonthOld: string;
-  function  getObjectPrice(objectDescription: string): string;
-  function  getObjectInCart(objectArray, SessionId: string): string;
-  function  listGroupedCartItems(sessionId: string): string;
-  function  checkCart(sessionId: string): string;
-  function  listGroupedInvoiceItems(sessionId: string): string;
-  function constructPowerTrafo(value: integer): string;
-function binPower(base, exponent: integer): integer;
-
-  procedure resetSession();
-  procedure createShoppingCart(sessionId: string);
-  procedure removeEmptyCarts();
-  procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
+  function getScreen(htmlItem: string): string;
+  function getDetailScreen(htmlItem: string): string;
+  function constructPowerTrafo(myIp: String; value: integer): string;
+  function storeTempTrafoSettings(myIp, myTrafoType: string; Part, BinaryValue: Integer): string;
+  function getObjectPrice(objectDescription: string): string;
+  function getObjectInCart(objectArray, SessionId: string): string;
+  function listGroupedCartItems(sessionId: string): string;
+  function checkCart(sessionId: string): string;
+  function listGroupedInvoiceItems(sessionId: string): string;
+  function binPower(base, exponent: integer): integer;
 
 implementation
-
-function loadPage(): string;
-  var
-  thisQuery: tAdoQuery;
-begin
-  thisQuery := tAdoQuery.Create(nil);
-  thisQuery.Connection := form1.adoConnHtmlPages;
-
-  with thisQuery do begin
-    SQL.Clear;
-    SQL.add('select * from TB100_HtmlPages where id = "SplashPage"');
-    open;
-    Result := fieldByName('InlineHtml').AsString;
-  end;
-end;
-
-function storeSessionSettings(myIp: string): string;
-  var
-  thisQuery: tAdoQuery;
-  newSessionId, newTimeStamp: string;
-begin
-  thisQuery := tAdoQuery.Create(nil);
-  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
-  newSessionId := generateSessionId;
-  newTimestamp := generateTimestamp;
-
-  with thisQuery do begin
-    SQL.Clear;
-    SQL.add('insert into TB900_SessionSettings(SessionId, Ip_v4, ClientId, SessionActive, Timestamp) values (:SessionId, :ip_v4, :ClientId, :SessionActive, :timestamp)');
-    Parameters.ParamByName('SessionId').Value := newSessionId;
-    Parameters.ParamByName('ip_v4').Value := myIp;
-    Parameters.ParamByName('ClientId').Value := newSessionId + '_' + myIp;
-    Parameters.ParamByName('SessionActive').Value := true;
-    Parameters.ParamByName('timestamp').Value := newTimestamp;
-    execSql;
-    Result := newSessionId + '_' + myIp;
-  end;
-end;
-
-function updateSessionSettings(mySessId: string): string;
-  var
-  thisQuery: tAdoQuery;
-  myId, myIp: string;
-  delimiter: integer;
-begin
-  thisQuery := tAdoQuery.Create(nil);
-  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
-
-  delimiter := pos('_', mySessId);
-  myId := copy(mySessId, 0, delimiter - 1);
-  myIp := copy(mySessId, delimiter + 1, length(mySessId) - delimiter);
-
-  with thisQuery do begin
-    SQL.Clear;
-    SQL.add('update TB900_SessionSettings set sessionActive = true, timestamp = :timestamp where clientId = :clientId');
-    Parameters.ParamByName('clientId').Value := mySessId;
-    Parameters.ParamByName('timestamp').Value := generateTimestamp;
-    execSQL;
-  end;
-end;
-
-function generateSessionId: string;
-var
-  t: integer;
-  hex: string;
-begin
-  Randomize;
-  for t  := 1 to 20 do
-    hex := hex + intToHex(random(15), 1);
-  result := hex;
-end;
-
-function generateTimestamp(offset: integer = 0): string;
-var
-  thisDate: string;
-begin
-  thisDate := FormatDateTime('yyyy/mm/dd hh:mm:ss:zzz', Now() - EncodeTime(0, offset, 0, 0));
-  result := thisDate;
-end;
-
-function generateTimestampMonthOld: string;
-var
-  thisDate: string;
-begin
-  thisDate := FormatDateTime('yyyy/mm/dd hh:mm:ss:zzz', Now() - 30);
-  result := thisDate;
-end;
 
 function getScreen(htmlItem: string): string;
   var
@@ -128,83 +32,82 @@ begin
   end;
 end;
 
-function constructPowerTrafo(value: integer): string;
+function storeTempTrafoSettings(myIp, myTrafoType: string; Part, BinaryValue: Integer): string;
   var
   thisQuery: tAdoQuery;
-  T: integer;
-  htmlSet: array[0..5] of string;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  writelog(generateTimestamp);
+  with thisQuery do begin
+    SQL.Clear;
+    SQL.add('delete from tb910_temp_trafo_settings where Ip = :ip');
+    Parameters.ParamByName('Ip').Value := myIp;
+    execSql;
+  end;
+
+  with thisQuery do begin
+    SQL.Clear;
+    SQL.add('insert into tb910_temp_trafo_settings (Ip, Part, TrafoType, BinValue, Timestamp) values (:ip, :Part, :TrafoType, :BinValue, :timestamp)');
+    Parameters.ParamByName('Ip').Value := myIp;
+    Parameters.ParamByName('Part').Value := Part;
+    Parameters.ParamByName('TrafoType').Value := myTrafoType;
+    Parameters.ParamByName('BinValue').Value := BinaryValue;
+    Parameters.ParamByName('timestamp').Value := generateTimestamp;
+    try
+      execSql;
+      Result := 'ok';
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
+end;
+
+function constructPowerTrafo(myIp: String; value: integer): string;
+  var
+  thisQuery: tAdoQuery;
+  T, tempValue: integer;
+  mainHtml: string;
 begin
   thisQuery := tAdoQuery.Create(nil);
   thisQuery.Connection := form1.adoConnHtmlPages;
-  {
-  <div class="infoContainerMedium">
-<table >
-  <tr>
-    <th class = "header">Voedingstrafo details</th>
-    <th class = "header"></th>
-  </tr>
-  <tr>
-    <td class = "rowTitle">secundair voltage</td>
-    <td class = "cell"><input type="text" id="secWikkVolt" ></td>
-  </tr>
-  <tr>
-    <td class = "rowTitle">secundair amperage</td>
-    <td class = "cell"><input type="text" id="secWikkAmp" ></td>
-  </tr>
-  <tr>
-    <td  class = "rowTitle">middenaftakking</td>
-    <td class = "cell"><input type="text" id="SecMiddenAftak" value = "Ja"></td>
-  </tr>
-  <tr>
-    <td  class = "rowTitle">wikkeling 6.3v</td>
-    <td class = "cell"><input type="checkbox" id="fil6.3" onclick="objectBin= objectBin ^= 4"></td>
-  </tr>
-  <tr>
-    <td  class = "rowTitle">wikkeling 5v</td>
-    <td class = "cell"><input type="checkbox" id="fil5.0" onclick="objectBin= objectBin ^= 8"></td>
-  </tr>
-  <tr>
-    <td  class = "rowTitle">middenaftakking tbv gloeidraden</td>
-    <td class = "cell"><input type="checkbox" id="filCentTap" onclick="objectBin= objectBin ^= 16"></td>
-  </tr>
-  <tr>
-    <td  class = "rowTitle">aftakking 50v</td>
-    <td class = "cell"><input type="checkbox" id="tap50v" onclick="objectBin= objectBin ^= 32"></td>
-  </tr>
-  <tr>
-    <td  class = "submitTitle"></td>
-    <td class = "submitCell"></td>
-  </tr>
-  <tr>
-    <td  class = "submitTitle"></td>
-    <td class = "submitCell"><button type="button" onclick="getPage('savePtrafoSpecs')">Opslaan</button></td>
-  </tr>
-</table>
-</div>
 
-
-  }
-
-  writelog('constructPowerTrafo');
-
-  for T := 0 to 5 do begin
-    if (value - binPower(2, t) > 0) then begin
-      htmlSet[t] := 'true';
-      value := value - binPower(2, t);
+  if storeTempTrafoSettings(myIp, 'powertrafo', 1, value) = 'ok' then begin
+    with thisQuery do begin
+      SQL.Clear;
+      SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
+      Parameters.ParamByName('idName').Value := 'powerTrafoDetails';
+      Parameters.ParamByName('itemNr').Value := 0;
+      try
+        open;
+      except
+        on E:exception do writelog(E.Message);
+      end;
+      mainHtml := fields[0].AsString;
+      close;
     end;
-    writelog(inttostr(t));
+
+    for T := 5 downto 0 do begin
+      tempValue := binPower(2, T);
+
+      if (value and tempValue = tempValue) then begin
+        with thisQuery do begin
+          SQL.Clear;
+          SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
+          Parameters.ParamByName('idName').Value := 'powerTrafoDetails';
+          Parameters.ParamByName('itemNr').Value := intToStr(tempValue);
+          open;
+          mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), fields[0].AsString);
+          close;
+        end;
+      end else
+          mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), '');
+    end;
+    writeLog(mainHtml);
+
+    result := mainHtml;
   end;
-//  for T := 1 to 6 do
-//    writelog (BoolToStr(switchSet[t]));
-
-  result := 'terug van weggeweest';
-
-//  with thisQuery do begin
-//    SQL.Clear;
-//    SQL.add('select inlineHtml from TB100_HtmlPages where id = :loadItem');
-//    Parameters.ParamByName('loadItem').Value := htmlItem;
-//    open;
-//    Result := fields[0].AsString;
 end;
 
 //getDetailScreenClick(elementId)
@@ -513,77 +416,20 @@ begin
   result := 'item is succesvol in het winkelwagentje geplaatst';
 end;
 
-{
-  ************************************************************************************************
-      procedures
-  *************************************************************************************************
- }
-
-procedure resetSession();
-var
-  thisQuery: tAdoQuery;
-begin
-  thisQuery := tAdoQuery.Create(nil);
-  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
-  with thisQuery do begin
-    SQL.Clear;
-    SQL.add('update TB900_SessionSettings set sessionActive = false, timestamp = :timestamp where timestamp <= :timestampMin30');
-    Parameters.ParamByName('timestamp').Value := generateTimestamp();
-    Parameters.ParamByName('timestampMin30').Value := generateTimestamp(30);
-    execSQL;
-  end;
-end;
-
-procedure removeEmptyCarts();
-var
-  thisQuery: tAdoQuery;
-begin
-  thisQuery := tAdoQuery.Create(nil);
-  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
-  with thisQuery do begin
-    SQL.Clear;
-    SQL.add('delete from tb300_shoppingcart where GotItems = false and timestamp <= :timestampMin30');
-    Parameters.ParamByName('timestampMin30').Value := generateTimestamp(30);
-    execSQL;
-  end;
-end;
-
-procedure createShoppingCart(sessionId: string);
-var
-  thisQuery: tAdoQuery;
-begin
-  thisQuery := tAdoQuery.Create(nil);
-  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
-  with thisQuery do begin
-    SQL.Clear;
-    SQL.add('insert into TB300_ShoppingCart (ClientId, Gotitems, Timestamp) values (:ClientId, :Gotitems, :Timestamp)');
-    Parameters.ParamByName('ClientId').Value := sessionId;
-    Parameters.ParamByName('Gotitems').Value := false;
-    Parameters.ParamByName('Timestamp').Value := generateTimestamp();
-    try
-      execSQL;
-    except
-      //als het mis gaat dan is de cart er al
-    end;
-  end;
-end;
-
-procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
-begin
-   ListOfStrings.Clear;
-   ListOfStrings.Delimiter       := Delimiter;
-   ListOfStrings.StrictDelimiter := True;
-   ListOfStrings.DelimitedText   := Str;
-end;
 function binPower(base, exponent: integer): integer;
 var
-  I: integer;
+  I, myResult, tempBase: integer;
 begin
-  for I := 0 to exponent do
-    if I = 0 then
-      result := 1
-    else
-      result := base * 2;
+  tempBase := base;
+  if exponent = 0 then
+    myResult := 1
+  else begin
+    for I := 1 to exponent-1 do begin
+      base := base * tempBase;
+    end;
+    myResult := base;
+    end;
+    result := myResult;
 end;
 
 end.
