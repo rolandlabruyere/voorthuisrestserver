@@ -2,6 +2,7 @@ unit CommonFunctionUnit;
 
 interface
   uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, System.StrUtils, System.math;
+
   function storeSessionSettings(myIp: string): string;
   function updateSessionSettings(myIp: string): string;
   function generateSessionId(): string;

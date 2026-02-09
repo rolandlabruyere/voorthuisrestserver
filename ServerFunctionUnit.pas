@@ -6,8 +6,11 @@ interface
 
   function getScreen(htmlItem: string): string;
   function getDetailScreen(htmlItem: string): string;
-  function constructPowerTrafo(myIp: String; value: integer): string;
-  function storeTempTrafoSettings(myIp, myTrafoType: string; Part, BinaryValue: Integer): string;
+  function constructPowerTrafoScreen(myIp, value: String): string;
+  function checkForUnfinishedTrafo(myIp : String): string;
+  function initNewPowerTrafo(myIp : String): string;
+  function calculatePowerTrafo(myIp, fixValue: String): string;
+  function storeTempTrafoSettings(myIp, myTrafoType, Part, pickedValues: String): string;
   function getObjectPrice(objectDescription: string): string;
   function getObjectInCart(objectArray, SessionId: string): string;
   function listGroupedCartItems(sessionId: string): string;
@@ -16,6 +19,54 @@ interface
   function binPower(base, exponent: integer): integer;
 
 implementation
+
+
+function calculatePowerTrafo(myIp, fixValue: String): string;
+  var
+  htmlQuery, customerQuery: tAdoQuery;
+  T, tempValue: integer;
+  mainHtml: string;
+begin
+  htmlQuery := tAdoQuery.Create(nil);
+  htmlQuery.Connection := form1.adoConnHtmlPages;
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  if storeTempTrafoSettings(myIp, 'powertrafo', '2', fixValue) = 'ok' then begin
+    with htmlQuery do begin
+      SQL.Clear;
+      SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
+      Parameters.ParamByName('idName').Value := 'powerTrafoCalculator';
+      Parameters.ParamByName('itemNr').Value := 0;
+      try
+        open;
+      except
+        on E:exception do writelog(E.Message);
+      end;
+      mainHtml := fields[0].AsString;
+      close;
+    end;
+
+    for T := 5 downto 0 do begin
+ //     tempValue := binPower(2, T);
+
+//      if (fixValue and tempValue = tempValue) then begin
+//        with htmlQuery do begin
+//          SQL.Clear;
+//          SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
+//          Parameters.ParamByName('idName').Value := 'powerTrafoDetails';
+//          Parameters.ParamByName('itemNr').Value := intToStr(tempValue);
+//          open;
+//          mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), fields[0].AsString);
+//          close;
+//        end;
+//      end else
+//        mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), '');
+    end;
+    result := mainHtml;
+  end;
+end;
+
 
 function getScreen(htmlItem: string): string;
   var
@@ -32,28 +83,28 @@ begin
   end;
 end;
 
-function storeTempTrafoSettings(myIp, myTrafoType: string; Part, BinaryValue: Integer): string;
+function storeTempTrafoSettings(myIp, myTrafoType, Part, pickedValues: String): string;
   var
   thisQuery: tAdoQuery;
 begin
   thisQuery := tAdoQuery.Create(nil);
   thisQuery.Connection := form1.adoVoorThuisCustomerSales;
 
-  writelog(generateTimestamp);
   with thisQuery do begin
     SQL.Clear;
-    SQL.add('delete from tb910_temp_trafo_settings where Ip = :ip');
+    SQL.add('delete from tb910_temp_trafo_settings where Ip = :ip and Part = :part');
     Parameters.ParamByName('Ip').Value := myIp;
+    Parameters.ParamByName('part').Value := Part;
     execSql;
   end;
 
   with thisQuery do begin
     SQL.Clear;
-    SQL.add('insert into tb910_temp_trafo_settings (Ip, Part, TrafoType, BinValue, Timestamp) values (:ip, :Part, :TrafoType, :BinValue, :timestamp)');
+    SQL.add('insert into tb910_temp_trafo_settings (Ip, Part, TrafoType, CommonValues, Timestamp) values (:ip, :Part, :TrafoType, :CommonValues, :timestamp)');
     Parameters.ParamByName('Ip').Value := myIp;
     Parameters.ParamByName('Part').Value := Part;
     Parameters.ParamByName('TrafoType').Value := myTrafoType;
-    Parameters.ParamByName('BinValue').Value := BinaryValue;
+    Parameters.ParamByName('CommonValues').Value := pickedValues;
     Parameters.ParamByName('timestamp').Value := generateTimestamp;
     try
       execSql;
@@ -64,16 +115,106 @@ begin
   end;
 end;
 
-function constructPowerTrafo(myIp: String; value: integer): string;
+function checkForUnfinishedTrafo(myIp : String): string;
+  var
+  thisQuery: tAdoQuery;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  result := '';
+
+  with thisQuery do begin
+    SQL.Clear;
+    SQL.add('select trafoNum from tb200_power_trafo_config where ip = :myIp and isClosed = :isClosed');
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('isClosed').Value := false;
+    try
+    open;
+    if thisQuery.RecordCount > 0 then
+      result := fields[0].AsString;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+    writelog(result);
+  end;
+end;
+
+function initNewPowerTrafo(myIp : String): string;
+  var
+  thisQuery: tAdoQuery;
+  currentTrafoNum: string;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+  thisQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  currentTrafoNum := checkForUnfinishedTrafo(myIp);
+
+  if currentTrafoNum = '' then
+    currentTrafoNum := getCurrentNumber('powertrafo')
+  else begin
+    with thisQuery do begin
+      SQL.Clear;
+      SQL.add('delete from tb200_power_trafo_config where ip = :myIp and trafoNum = :trafoNum and isClosed = :isClosed');
+      Parameters.ParamByName('myIp').Value := myIp;
+      Parameters.ParamByName('trafoNum').Value := currentTrafoNum;
+      Parameters.ParamByName('isClosed').Value := false;
+      try
+        execSql;
+      except
+        on E:exception do writelog(E.Message);
+      end;
+    end;
+  end;
+
+  with thisQuery do begin
+    SQL.Clear;
+    SQL.add('insert into tb200_power_trafo_config values' +
+            '(:ip, :trafoNum, :isClosed, :secundary, :volts, :milliAmps, :centerTap, :tapFiftyVolt, ' +
+            ':filamentFiveVolt, :filamentFiveAmps, :filamentSixVolt, :filamentSixAmps, ' +
+            ':filamentTwelveVolt, :filamentTwelveAmps, :filamentCenterTap, :timestamp)');
+
+    Parameters.ParamByName('ip').Value := myIp;
+    Parameters.ParamByName('trafoNum').Value := currentTrafoNum;
+    Parameters.ParamByName('isClosed').Value := false;
+    Parameters.ParamByName('secundary').Value := true;
+    Parameters.ParamByName('volts').Value := 0;
+    Parameters.ParamByName('milliAmps').Value := 0;
+
+    Parameters.ParamByName('centerTap').Value := false;
+    Parameters.ParamByName('tapFiftyVolt').Value := false;
+    Parameters.ParamByName('filamentFiveVolt').Value := false;
+    Parameters.ParamByName('filamentFiveAmps').Value := 0;
+    Parameters.ParamByName('filamentSixVolt').Value := false;
+
+    Parameters.ParamByName('filamentSixAmps').Value := 0;
+    Parameters.ParamByName('filamentTwelveVolt').Value := false;
+    Parameters.ParamByName('filamentTwelveAmps').Value := 0;
+    Parameters.ParamByName('filamentCenterTap').Value := false;
+    Parameters.ParamByName('timestamp').Value := generateTimestamp;
+    try
+      execSql;
+      Result := currentTrafoNum;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
+end;
+
+
+function constructPowerTrafoScreen(myIp, value: String): string;
   var
   thisQuery: tAdoQuery;
   T, tempValue: integer;
-  mainHtml: string;
+  mainHtml, trafoId: string;
 begin
   thisQuery := tAdoQuery.Create(nil);
   thisQuery.Connection := form1.adoConnHtmlPages;
 
-  if storeTempTrafoSettings(myIp, 'powertrafo', 1, value) = 'ok' then begin
+  if (storeTempTrafoSettings(myIp, 'powertrafo', '1', value) = 'ok') then begin
+    trafoId := initNewPowerTrafo(myIp);
+    writelog(trafoId);
+
     with thisQuery do begin
       SQL.Clear;
       SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
@@ -88,29 +229,27 @@ begin
       close;
     end;
 
-    for T := 5 downto 0 do begin
+    for T := 6 downto 0 do begin
       tempValue := binPower(2, T);
 
-      if (value and tempValue = tempValue) then begin
+      if (strToInt(value) and tempValue = tempValue) then begin
         with thisQuery do begin
           SQL.Clear;
           SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
           Parameters.ParamByName('idName').Value := 'powerTrafoDetails';
-          Parameters.ParamByName('itemNr').Value := intToStr(tempValue);
+          Parameters.ParamByName('itemNr').Value := tempValue;
           open;
           mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), fields[0].AsString);
           close;
         end;
       end else
-          mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), '');
+        mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), '');
     end;
-    writeLog(mainHtml);
-
     result := mainHtml;
   end;
 end;
 
-//getDetailScreenClick(elementId)
+
 function getDetailScreen(htmlItem: string): string;
   var
   thisQuery: tAdoQuery;

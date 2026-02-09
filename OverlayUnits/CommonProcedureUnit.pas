@@ -2,6 +2,7 @@ unit CommonProcedureUnit;
 
 interface
   uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, System.StrUtils, System.math, Winapi.Messages,  Winapi.ShellApi;
+
   procedure writeLog(writeItem: string);
   procedure resetSession();
   procedure createShoppingCart(sessionId: string);

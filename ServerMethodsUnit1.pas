@@ -37,7 +37,7 @@ begin
   storeSessionSettings(passThruItem[1]);
 
   menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
-                'savePtrafoSpecs', 'kaarsenInfo', 'haakwerkInfo', 'macrameInfo', 'bedrijvenInfo', 'diversenInfo', 'winkelwagenInfo', 'zoekenInfo', 'filosofieInfo',
+                'savePtrafoSpecs', 'savePtrafoValues', 'haakwerkInfo', 'macrameInfo', 'bedrijvenInfo', 'diversenInfo', 'winkelwagenInfo', 'zoekenInfo', 'filosofieInfo',
                 'homeVmenu', 'kaarsenVmenu', 'haakwerkVmenu', 'macrameVmenu', 'bedrijvenVmenu', 'diversenVmenu', 'winkelwagenVmenu', 'zoekenVmenu', 'filosofieVmenu',
                 'indexPageDinerCandle', 'indexPageDinerCandleInfo', 'indexPageDinerCandleVmenu'
                ];
@@ -53,8 +53,8 @@ begin
     6   : Result := getScreen('logo');
     7   : Result := getScreen('logo');
     8   : Result := getScreen('logo');
-    9   : Result := constructPowerTrafo(passThruItem[1], StrToInt(passThruItem[3]));
-    10  : Result := getScreen('indexPageKaars');
+    9   : Result := constructPowerTrafoScreen(passThruItem[1], passThruItem[3]);
+    10  : Result := calculatePowerTrafo(passThruItem[1], passThruItem[3]);
 //    11  : Result := createJsonPayment(25.00, 'VT202503120001');
 //    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
     13  : Result := getScreen('indexPageCandleHolders');

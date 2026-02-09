@@ -10,7 +10,6 @@
 	<script type="application/javascript">var pubIp; function getIP(json){pubIp=json.ip;}</script>
 	<script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=getIP"></script>
 	<script type="text/javascript" src="js/base64.js"></script>
-	<script type="text/javascript" src="js/slideshow.js"></script>
 	<script type="text/javascript" src="js/json2.js"></script>
 	<script type="text/javascript" src="js/common.js"></script>
 	<script type="text/javascript" src="js/serverfunctionexecutor.js"></script>
@@ -18,20 +17,25 @@
 	<script type="text/javascript" src="<#serverfunctionsjs>"></script>
 	<script type="text/javascript">
 		var objectBin = 1;
+		var savedValues = "";
 		
-		function getPage(itemLabel, callbackDiv){
-			var content = serverMethods().RestDispatcher(itemLabel + "?" + formatIp(pubIp) + "?" + callbackDiv + "?" + objectBin);
+		function getPage(itemLabel, callbackDiv, passThruValue){
+			var content = serverMethods().RestDispatcher(itemLabel + "?" + formatIp(pubIp) + "?" + callbackDiv + "?" + passThruValue);
 			var restContent = content.result.split("|");
 			document.getElementById(restContent[0]).innerHTML = restContent[1];
 		}
 		
+		function bufferValue(id, value){
+			savedValues += id + "=" + value + "|";
+		}
+
 		function serverMethods(){
 			return new <#classname>(connectionInfo);
 		}
 	</script>
 </head>
 
-<body onload="getPage('home', 'contentDiv')">
+<body onload="getPage('home', 'contentDiv', '')">
 	<div id="menu"></div>
 	<script src='js/reactProdMin.js'></script>
 	<script src='js/react-DomProdMin.js'></script>

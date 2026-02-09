@@ -120,8 +120,9 @@ const Menu = ({ items }) => {
       className: `item ${active === menuIndex ? 'active' : ''}`,
       onMouseEnter: () => {setActive(menuIndex);},
       onClick: () => {
-			getPage(item.name, "contentDiv");
+			getPage(item.name, "contentDiv", objectBin);
 			objectBin = 1;
+			savedValues = "";
 		 },
       href: item.href 
 },
