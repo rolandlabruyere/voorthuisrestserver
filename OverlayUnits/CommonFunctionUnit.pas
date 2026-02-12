@@ -14,6 +14,7 @@ interface
   function getCurrentNumber(itemName: string): string;
   function CountOccurences( const SubText: string; const Text: string): Integer;
   function readEntireFile(fileName: String): String;
+  function getTrafoBinValue(myIp: string): integer;
 
 implementation
   uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
@@ -23,7 +24,22 @@ implementation
     frequency = 50;
     fluxDensity = 1;
 
-  function storeSessionSettings(myIp: string): string;
+function getTrafoBinValue(myIp: string): integer;
+  var
+    customerQuery: tAdoQuery;
+  begin
+    customerQuery := tAdoQuery.Create(nil);
+    customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+    with customerQuery, SQL do begin
+      clear;
+      add('select commonValues from tb910_temp_trafo_settings where ip = :myIp and part = 1');
+      Parameters.ParamByName('myIp').Value := myIp;
+      open;
+      result := fields[0].AsInteger;
+    end;
+  end;
+
+   function storeSessionSettings(myIp: string): string;
     var
     thisQuery: tAdoQuery;
     newTimeStamp: string;

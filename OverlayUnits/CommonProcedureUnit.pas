@@ -11,11 +11,67 @@ interface
   procedure writeToFile(fileName,fileContent: String);
   procedure runCmd(const ExecutableName, Parameters: string);
   procedure createSlideShow;
+  procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: string);
 
 implementation
   uses FormUnit1, dialogs, CommonFunctionUnit, FindFiles;
   var
     primVA: single;
+
+  procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: string);
+  var
+  htmlQuery, customerQuery: tAdoQuery;
+  T, binValue, tempInt: integer;
+  parts: TArray<String>;
+  content: TArray<String>;
+  boolValue: TStrArray;
+  intValue: TIntArray;
+  hulp: string;
+  begin
+    htmlQuery := tAdoQuery.Create(nil);
+    htmlQuery.Connection := form1.adoConnHtmlPages;
+    customerQuery := tAdoQuery.Create(nil);
+    customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+    boolValue := TStrArray.create('centerTap', 'tapFiftyVolt', 'filamentCenterTap');
+    intValue := TIntArray.create(1, 5, 6);
+    binValue := getTrafoBinValue(myIp);
+    parts := fixValue.Split(['|']);
+
+    for T := 0 to length(parts) - 1 do begin
+      hulp := parts[T];
+      content := hulp.split(['=']);
+      with customerQuery, SQL do begin
+        clear;
+        add('update tb200_power_trafo_config set ' + content[0] + ' = :value, timestamp = :timestamp where ip = :myIp and isClosed = false');
+        Parameters.ParamByName('value').Value := content[1];
+        Parameters.ParamByName('myIp').Value := myIp;
+        Parameters.ParamByName('timestamp').Value := generateTimestamp();
+        try
+          execSql;
+        except
+          on E:exception do writelog(E.Message);
+        end;
+      end;
+    end;
+
+    for T := 0 to 2 do begin
+      tempInt := binPower(2, intValue[T]);
+      if (binValue and tempInt = tempInt) then begin
+        with customerQuery, SQL do begin
+          clear;
+          add('update tb200_power_trafo_config set ' + boolValue[T] + ' = :boolValue, timestamp = :timestamp where ip = :myIp and isClosed = false');
+          Parameters.ParamByName('myIp').Value := myIp;
+          Parameters.ParamByName('boolValue').Value := true;
+          Parameters.ParamByName('timestamp').Value := generateTimestamp();
+          try
+            execSql;
+          except
+            on E:exception do writelog(E.Message);
+          end;
+        end;
+      end;
+    end;
+  end;
 
   procedure writeLog(writeItem: string);
   var

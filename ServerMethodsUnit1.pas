@@ -43,6 +43,9 @@ begin
                ];
   writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
+//    11  : Result := createJsonPayment(25.00, 'VT202503120001');
+//    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
+
   case IndexStr(passThruItem[0], menuIndex) of
     0   : Result := getScreen('splashPage');
     1   : Result := getScreen('powerTrafoSpecs');
@@ -52,11 +55,11 @@ begin
     5   : Result := getScreen('logo');
     6   : Result := getScreen('logo');
     7   : Result := getScreen('logo');
-    8   : Result := getScreen('logo');
+    8   : Result := getScreen('settings');
     9   : Result := constructPowerTrafoScreen(passThruItem[1], passThruItem[3]);
     10  : Result := calculatePowerTrafo(passThruItem[1], passThruItem[3]);
-//    11  : Result := createJsonPayment(25.00, 'VT202503120001');
-//    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
+    11  : Result := '';
+    12  : Result := '';
     13  : Result := getScreen('indexPageCandleHolders');
     14  : Result := getScreen('DetailPage');
     15  : Result := getScreen('shoppingCartItems');

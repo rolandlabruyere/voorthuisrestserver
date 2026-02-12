@@ -9,6 +9,8 @@ uses
   Data.Win.ADODB, Vcl.ExtCtrls;
 
 type
+  TIntArray = array of integer;
+  TStrArray = array of string;
   TForm1 = class(TForm)
     ButtonStart: TButton;
     ButtonStop: TButton;

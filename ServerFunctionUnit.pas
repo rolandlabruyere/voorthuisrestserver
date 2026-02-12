@@ -20,7 +20,6 @@ interface
 
 implementation
 
-
 function calculatePowerTrafo(myIp, fixValue: String): string;
   var
   htmlQuery, customerQuery: tAdoQuery;
@@ -33,6 +32,9 @@ begin
   customerQuery.Connection := form1.adoVoorThuisCustomerSales;
 
   if storeTempTrafoSettings(myIp, 'powertrafo', '2', fixValue) = 'ok' then begin
+
+    powerTrafoSaveFinalizeSpecs(myIp, fixValue);
+
     with htmlQuery do begin
       SQL.Clear;
       SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
@@ -63,7 +65,8 @@ begin
 //      end else
 //        mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), '');
     end;
-    result := mainHtml;
+    //result := mainHtml;
+    result := 'dit is de output van: "calculatePowerTrafo"';
   end;
 end;
 
@@ -136,7 +139,6 @@ begin
     except
       on E:exception do writelog(E.Message);
     end;
-    writelog(result);
   end;
 end;
 
@@ -171,8 +173,7 @@ begin
     SQL.Clear;
     SQL.add('insert into tb200_power_trafo_config values' +
             '(:ip, :trafoNum, :isClosed, :secundary, :volts, :milliAmps, :centerTap, :tapFiftyVolt, ' +
-            ':filamentFiveVolt, :filamentFiveAmps, :filamentSixVolt, :filamentSixAmps, ' +
-            ':filamentTwelveVolt, :filamentTwelveAmps, :filamentCenterTap, :timestamp)');
+            ':filamentFiveAmps, :filamentSixAmps, :filamentTwelveAmps, :filamentCenterTap, :timestamp)');
 
     Parameters.ParamByName('ip').Value := myIp;
     Parameters.ParamByName('trafoNum').Value := currentTrafoNum;
@@ -180,18 +181,14 @@ begin
     Parameters.ParamByName('secundary').Value := true;
     Parameters.ParamByName('volts').Value := 0;
     Parameters.ParamByName('milliAmps').Value := 0;
-
     Parameters.ParamByName('centerTap').Value := false;
     Parameters.ParamByName('tapFiftyVolt').Value := false;
-    Parameters.ParamByName('filamentFiveVolt').Value := false;
     Parameters.ParamByName('filamentFiveAmps').Value := 0;
-    Parameters.ParamByName('filamentSixVolt').Value := false;
-
     Parameters.ParamByName('filamentSixAmps').Value := 0;
-    Parameters.ParamByName('filamentTwelveVolt').Value := false;
     Parameters.ParamByName('filamentTwelveAmps').Value := 0;
     Parameters.ParamByName('filamentCenterTap').Value := false;
     Parameters.ParamByName('timestamp').Value := generateTimestamp;
+
     try
       execSql;
       Result := currentTrafoNum;
