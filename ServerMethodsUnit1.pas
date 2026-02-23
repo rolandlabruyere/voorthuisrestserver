@@ -37,10 +37,7 @@ begin
   storeSessionSettings(passThruItem[1]);
 
   menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
-                'savePtrafoSpecs', 'savePtrafoValues', 'haakwerkInfo', 'macrameInfo', 'bedrijvenInfo', 'diversenInfo', 'winkelwagenInfo', 'zoekenInfo', 'filosofieInfo',
-                'homeVmenu', 'kaarsenVmenu', 'haakwerkVmenu', 'macrameVmenu', 'bedrijvenVmenu', 'diversenVmenu', 'winkelwagenVmenu', 'zoekenVmenu', 'filosofieVmenu',
-                'indexPageDinerCandle', 'indexPageDinerCandleInfo', 'indexPageDinerCandleVmenu'
-               ];
+                'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings'];
   writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
 //    11  : Result := createJsonPayment(25.00, 'VT202503120001');
@@ -58,25 +55,25 @@ begin
     8   : Result := getScreen('settings');
     9   : Result := constructPowerTrafoScreen(passThruItem[1], passThruItem[3]);
     10  : Result := calculatePowerTrafo(passThruItem[1], passThruItem[3]);
-    11  : Result := '';
-    12  : Result := '';
-    13  : Result := getScreen('indexPageCandleHolders');
-    14  : Result := getScreen('DetailPage');
-    15  : Result := getScreen('shoppingCartItems');
-    16  : Result := getScreen('indexPageDinerCandle');
-    17  : Result := getScreen('cartFlexBox');
-    18  : Result := '';
-    19  : Result := '';
-    20  : Result := '';
-    21  : Result := '';
-    22  : Result := '';
-    23  : Result := '';
-    24  : Result := '';
-    25  : Result := '';
-    26  : Result := '';
-    27  : Result := getScreen('logo');
-    28  : result := getScreen('indexPageDinerCandle');
-    29  : result := '';
+    11  : Result := saveSettings(passThruItem[1], passThruItem[3]);
+//    12  : Result := '';
+//    13  : Result := getScreen('indexPageCandleHolders');
+//    14  : Result := getScreen('DetailPage');
+//    15  : Result := getScreen('shoppingCartItems');
+//    16  : Result := getScreen('indexPageDinerCandle');
+//    17  : Result := getScreen('cartFlexBox');
+//    18  : Result := '';
+//    19  : Result := '';
+//    20  : Result := '';
+//    21  : Result := '';
+//    22  : Result := '';
+//    23  : Result := '';
+//    24  : Result := '';
+//    25  : Result := '';
+//    26  : Result := '';
+//    27  : Result := getScreen('logo');
+//    28  : result := getScreen('indexPageDinerCandle');
+//    29  : result := '';
     else result := 'Geen item gevonden';
    end;
      Result := passThruItem[2] + '|' + Result;

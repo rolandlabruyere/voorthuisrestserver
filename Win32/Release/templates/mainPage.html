@@ -6,7 +6,6 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
 	<link rel="stylesheet" href="css/menuStyle.css">
 	<link rel="stylesheet" href="css/splash.css">
-	<link rel="stylesheet" href="css/slideshow.css">
 	<script type="application/javascript">var pubIp; function getIP(json){pubIp=json.ip;}</script>
 	<script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=getIP"></script>
 	<script type="text/javascript" src="js/base64.js"></script>
@@ -26,13 +25,15 @@
 		}
 		
 		function bufferValue(id, value){
-			savedValues += id + "=" + value + "|";
+			savedValues += id + "=" + value + "-";
+			console.log(savedValues);
 		}
 
 		function serverMethods(){
 			return new <#classname>(connectionInfo);
 		}
 	</script>
+
 </head>
 
 <body onload="getPage('home', 'contentDiv', '')">

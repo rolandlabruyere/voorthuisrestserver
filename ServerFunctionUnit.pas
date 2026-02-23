@@ -17,8 +17,102 @@ interface
   function checkCart(sessionId: string): string;
   function listGroupedInvoiceItems(sessionId: string): string;
   function binPower(base, exponent: integer): integer;
+  function saveGridSettings(myIp, VoltFreq: string): string;
+  function saveSitePrefs(myIp, checkedOptions: string): string;
+  function saveSettings(myIp, fixValue: string): string;
 
 implementation
+
+function saveSettings(myIp, fixValue: string): string;
+var
+  fixElements: TArray<String>;
+begin
+  fixElements :=  fixValue.Split(['-']);
+  result := fixvalue + ' ' + IntToStr(length(fixElements)) ;
+end;
+
+function saveGridSettings(myIp, VoltFreq: string): string;
+var
+  customerQuery: tAdoQuery;
+  parts: TArray<String>;
+begin
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  parts := VoltFreq.Split(['-']);
+
+  with customerQuery do begin
+    SQL.Clear;
+    SQL.add('delete from tb930_grid_settings_per_ip where Ip = :Ip');
+    Parameters.ParamByName('Ip').Value := myIp;
+    try
+      execSql;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+
+    SQL.Clear;
+    SQL.add('insert into tb930_grid_settings_per_ip values (:Ip, :VoltageElectraGrid, :FreqElectraGrid, :Timestamp)');
+    Parameters.ParamByName('Ip').Value := myIp;
+    Parameters.ParamByName('VoltageElectraGrid').Value := parts[0];
+    Parameters.ParamByName('FreqElectraGrid').Value := parts[1];
+    Parameters.ParamByName('timestamp').Value := generateTimestamp;
+    try
+      execSql;
+      result := 'Netwerkgegevens opgeslagen.'
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
+end;
+
+//saveSitePrefs(
+function saveSitePrefs(myIp, checkedOptions: string): string;
+var
+  customerQuery: tAdoQuery;
+  options: array[1..4] of boolean;
+  T: integer;
+begin
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  for T := 1 to 4 do begin
+    if (StrToInt(checkedOptions) and binPower(2, T) = binPower(2, T)) then
+      options[T] := true
+    else
+      options[T] := false;
+  end;
+
+
+  with customerQuery do begin
+    SQL.Clear;
+    SQL.add('delete from tb920_customer_settings where Ip = :Ip');
+    Parameters.ParamByName('Ip').Value := myIp;
+    try
+      execSql;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+
+    SQL.Clear;
+    SQL.add('insert into tb920_customer_settings values (:Ip, :PermissionStoreAddress, :PermissionStorePaymentStats, ' +
+            ':AgreeShopConditions, :ShowInteractiveHelp, :Timestamp)');
+
+    Parameters.ParamByName('Ip').Value := myIp;
+    Parameters.ParamByName('PermissionStoreAddress').Value := options[1];
+    Parameters.ParamByName('PermissionStorePaymentStats').Value := options[2];
+    Parameters.ParamByName('AgreeShopConditions').Value := options[3];
+    Parameters.ParamByName('ShowInteractiveHelp').Value := options[4];
+    Parameters.ParamByName('timestamp').Value := generateTimestamp;
+    try
+      execSql;
+      result := 'Opties opgeslagen.'
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
+end;
+
 
 function calculatePowerTrafo(myIp, fixValue: String): string;
   var

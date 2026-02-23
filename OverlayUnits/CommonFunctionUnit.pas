@@ -112,7 +112,6 @@ function getTrafoBinValue(myIp: string): integer;
   var
     hulp: integer;
   begin
-    hulp := 1;
     case exponent of
      0: hulp := 1;
      1: hulp := 2;
@@ -158,7 +157,7 @@ begin
       Parameters.ParamByName('itemNumber').Value := hulp ;
       execSQL;
     end;
-    result := itemName + intToStr(wYear) + fillLeft(wMonth, 2) + result;
+    result := intToStr(wYear) + fillLeft(wMonth, 2) + result;
   end;
 
 

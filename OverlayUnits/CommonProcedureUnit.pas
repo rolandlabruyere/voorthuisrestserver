@@ -35,7 +35,7 @@ implementation
     boolValue := TStrArray.create('centerTap', 'tapFiftyVolt', 'filamentCenterTap');
     intValue := TIntArray.create(1, 5, 6);
     binValue := getTrafoBinValue(myIp);
-    parts := fixValue.Split(['|']);
+    parts := fixValue.Split(['-']);
 
     for T := 0 to length(parts) - 1 do begin
       hulp := parts[T];
