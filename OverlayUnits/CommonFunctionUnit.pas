@@ -11,10 +11,12 @@ interface
   function binPower(value, exponent: integer): integer;
   function fillLeft(myNumber, size: integer): string;
   function Left(myString: string; getPart: integer): string;
+  function Right(myString: string; getPart: integer): string;
   function getCurrentNumber(itemName: string): string;
   function CountOccurences( const SubText: string; const Text: string): Integer;
   function readEntireFile(fileName: String): String;
   function getTrafoBinValue(myIp: string): integer;
+  function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: string): string;
 
 implementation
   uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
@@ -23,6 +25,7 @@ implementation
     netVoltage = 230;
     frequency = 50;
     fluxDensity = 1;
+
 
 function getTrafoBinValue(myIp: string): integer;
   var
@@ -112,6 +115,8 @@ function getTrafoBinValue(myIp: string): integer;
   var
     hulp: integer;
   begin
+    hulp := 0;
+
     case exponent of
      0: hulp := 1;
      1: hulp := 2;
@@ -124,7 +129,7 @@ function getTrafoBinValue(myIp: string): integer;
     result := hulp;
   end;
 
-  function getCurrentNumber(itemName: string): string;
+function getCurrentNumber(itemName: string): string;
   var
     htmlQuery: tAdoQuery;
     hulp: integer;
@@ -160,6 +165,25 @@ begin
     result := intToStr(wYear) + fillLeft(wMonth, 2) + result;
   end;
 
+function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: string): string;
+  var
+    htmlQuery: tAdoQuery;
+    hulp: string;
+begin
+    htmlQuery := tAdoQuery.Create(nil);
+    htmlQuery.Connection := form1.adoConnHtmlPages;
+
+    with htmlQuery do begin
+      SQL.Clear;
+      SQL.Add('select street, city from tb990_postcode_tabel where postcode = :zipcode and :houseNumber between minNumber and maxNumber');
+      Parameters.ParamByName('zipcode').Value := zipCode;
+      Parameters.ParamByName('houseNumber').Value := houseNumber;
+      open;
+
+      hulp := fields[0].AsString + ' ' + houseNumber + ' ' + houseNumTvo + '<br>';
+      Result := hulp + left(zipcode, 4) + ' ' + right(zipcode, 2)  + '  ' + fields[1].AsString;
+    end;
+  end;
 
   function fillLeft(myNumber, size: integer): string;
   var
@@ -172,6 +196,11 @@ begin
   function Left(myString: string; getPart: integer): string;
   begin
     result := copy(myString, 0, getPart);
+  end;
+
+  function Right(myString: string; getPart: integer): string;
+  begin
+    result := copy(myString, length(myString) - (getpart - 1), getPart);
   end;
 
   { Returns a count of the number of occurences of SubText in Text }

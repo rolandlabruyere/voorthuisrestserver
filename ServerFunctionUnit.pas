@@ -17,8 +17,9 @@ interface
   function checkCart(sessionId: string): string;
   function listGroupedInvoiceItems(sessionId: string): string;
   function binPower(base, exponent: integer): integer;
-  function saveGridSettings(myIp, VoltFreq: string): string;
   function saveSitePrefs(myIp, checkedOptions: string): string;
+  function saveGridSettings(myIp, Voltage, Frequency: string): string;
+  function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: string): string;
   function saveSettings(myIp, fixValue: string): string;
 
 implementation
@@ -26,12 +27,45 @@ implementation
 function saveSettings(myIp, fixValue: string): string;
 var
   fixElements: TArray<String>;
+  elementParts: TArray<String>;
+  T: integer;
+  gridVoltage, gridFreq, zipcode, hsNumber, hsNumberTvo, saveSettings: string;
 begin
+  {mogelijke waarden zijn
+    gridVoltage
+    gridFreq
+    zipcode
+    hsNumber
+    hsNumberTvo
+    saveSettings
+  }
   fixElements :=  fixValue.Split(['-']);
-  result := fixvalue + ' ' + IntToStr(length(fixElements)) ;
+  for T := 0 to length(fixElements) - 1 do begin
+    try
+    elementParts := fixElements[T].Split(['=']);
+
+    if elementParts[0] = 'gridVoltage' then gridVoltage := elementParts[1];
+    if elementParts[0] = 'gridFreq' then gridFreq := elementParts[1];
+    if elementParts[0] = 'zipcode' then zipcode := elementParts[1];
+    if elementParts[0] = 'hsNumber' then hsNumber := elementParts[1];
+    if elementParts[0] = 'hsNumberTvo' then hsNumberTvo := elementParts[1];
+    if elementParts[0] = 'saveSettings' then saveSettings := elementParts[1];
+    except
+    if elementParts[0] = 'gridVoltage' then gridVoltage := '';
+    if elementParts[0] = 'gridFreq' then gridFreq := '';
+    if elementParts[0] = 'zipcode' then zipcode := '';
+    if elementParts[0] = 'hsNumber' then hsNumber := '';
+    if elementParts[0] = 'hsNumberTvo' then hsNumberTvo := '';
+    if elementParts[0] = 'saveSettings' then saveSettings := '';
+    end;
+  end;
+  
+  result := saveGridSettings(myIp, gridVoltage, gridFreq);
+  result := result + '<br>' + saveSitePrefs(myIp, saveSettings);
+  result := result + '<br>' + getAddress(myIp, zipcode, hsNumber, hsNumberTvo);
 end;
 
-function saveGridSettings(myIp, VoltFreq: string): string;
+function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: string): string;
 var
   customerQuery: tAdoQuery;
   parts: TArray<String>;
@@ -39,7 +73,38 @@ begin
   customerQuery := tAdoQuery.Create(nil);
   customerQuery.Connection := form1.adoVoorThuisCustomerSales;
 
-  parts := VoltFreq.Split(['-']);
+  with customerQuery do begin
+    SQL.Clear;
+    SQL.add('delete from tb110_address where Ip = :Ip');
+    Parameters.ParamByName('Ip').Value := myIp;
+    try
+      execSql;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+
+    SQL.Clear;
+    SQL.add('insert into tb110_address values (:Ip, :zipCode, :hsNumber, :hsNumTvo, :Timestamp)');
+    Parameters.ParamByName('Ip').Value := myIp;
+    Parameters.ParamByName('zipCode').Value := zipcode;
+    Parameters.ParamByName('hsNumber').Value := houseNumber;
+    Parameters.ParamByName('hsNumTvo').Value := houseNumberAdd;
+    Parameters.ParamByName('timestamp').Value := generateTimestamp;
+    try
+      execSql;
+      result := '<br>' + fetchAddressByZipcode(zipcode, houseNumber, houseNumberAdd);
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
+end;
+
+function saveGridSettings(myIp, Voltage, Frequency: string): string;
+var
+  customerQuery: tAdoQuery;
+begin
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
 
   with customerQuery do begin
     SQL.Clear;
@@ -54,8 +119,8 @@ begin
     SQL.Clear;
     SQL.add('insert into tb930_grid_settings_per_ip values (:Ip, :VoltageElectraGrid, :FreqElectraGrid, :Timestamp)');
     Parameters.ParamByName('Ip').Value := myIp;
-    Parameters.ParamByName('VoltageElectraGrid').Value := parts[0];
-    Parameters.ParamByName('FreqElectraGrid').Value := parts[1];
+    Parameters.ParamByName('VoltageElectraGrid').Value := Voltage;
+    Parameters.ParamByName('FreqElectraGrid').Value := Frequency;
     Parameters.ParamByName('timestamp').Value := generateTimestamp;
     try
       execSql;
@@ -66,7 +131,6 @@ begin
   end;
 end;
 
-//saveSitePrefs(
 function saveSitePrefs(myIp, checkedOptions: string): string;
 var
   customerQuery: tAdoQuery;
