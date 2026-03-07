@@ -5,6 +5,7 @@ interface
        CommonProcedureUnit, CommonFunctionUnit;
 
   function getScreen(htmlItem: string): string;
+  function getPlaceholders(htmlItem: string): string;
   function getDetailScreen(htmlItem: string): string;
   function constructPowerTrafoScreen(myIp, value: String): string;
   function checkForUnfinishedTrafo(myIp : String): string;
@@ -21,8 +22,69 @@ interface
   function saveGridSettings(myIp, Voltage, Frequency: string): string;
   function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: string): string;
   function saveSettings(myIp, fixValue: string): string;
+  function checkSettings(myIp: string): string;
+  function showStoredSettings(myIp: string; thisQuery: tAdoQuery): string;
+  function checkUnfinishedTrafo(myIp: string): string;
 
 implementation
+
+function checkUnfinishedTrafo(myIp: string): string;
+var
+  customerQuery: tAdoQuery;
+begin
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  with customerQuery do begin
+    SQL.Clear;
+    SQL.add('select * from tb200_power_trafo_config where Ip = :Ip and isClosed = false');
+    Parameters.ParamByName('Ip').Value := myIp;
+    open;
+    if (recordCount = 0) then
+      result := getScreen('powerTrafoSpecs')
+    else
+      result := getScreen('trafoFoundText');
+  end;
+end;
+
+function checkSettings(myIp: string): string;
+var
+  customerQuery: tAdoQuery;
+begin
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  with customerQuery do begin
+    SQL.Clear;
+    SQL.add('select * from vw925_customerstats where Ip = :Ip');
+    Parameters.ParamByName('Ip').Value := myIp;
+    open;
+    if (recordCount = 0) then
+      result := getScreen('settings')
+    else
+      result := showStoredSettings(myIp, customerQuery);
+  end;
+end;
+
+function showStoredSettings(myIp: string; thisQuery: tAdoQuery): string;
+var
+  settingsHtml, stringPlaceHolders: string;
+  placeHolders: TArray<String>;
+  T: integer;
+begin
+  settingsHtml := getScreen('storedSettings');
+  stringPlaceHolders := getPlaceholders('storedSettings');
+  placeHolders := stringPlaceHolders.Split(['|']);
+  for T := 0 to length(placeHolders) do begin
+    if thisQuery.Fields[T + 1].asString = '1' then
+      settingsHtml := settingsHtml.Replace(placeHolders[T], 'checked')
+    else
+      settingsHtml := settingsHtml.Replace(placeHolders[T], thisQuery.Fields[T + 1].asString);
+  end;
+
+  result := settingsHtml;
+  writelog(result);
+end;
 
 function saveSettings(myIp, fixValue: string): string;
 var
@@ -31,15 +93,8 @@ var
   T: integer;
   gridVoltage, gridFreq, zipcode, hsNumber, hsNumberTvo, saveSettings: string;
 begin
-  {mogelijke waarden zijn
-    gridVoltage
-    gridFreq
-    zipcode
-    hsNumber
-    hsNumberTvo
-    saveSettings
-  }
   fixElements :=  fixValue.Split(['-']);
+
   for T := 0 to length(fixElements) - 1 do begin
     try
     elementParts := fixElements[T].Split(['=']);
@@ -59,10 +114,7 @@ begin
     if elementParts[0] = 'saveSettings' then saveSettings := '';
     end;
   end;
-  
-  result := saveGridSettings(myIp, gridVoltage, gridFreq);
-  result := result + '<br>' + saveSitePrefs(myIp, saveSettings);
-  result := result + '<br>' + getAddress(myIp, zipcode, hsNumber, hsNumberTvo);
+  result := checkSettings(myIp);
 end;
 
 function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: string): string;
@@ -243,6 +295,22 @@ begin
     Result := fields[0].AsString;
   end;
 end;
+
+function getPlaceholders(htmlItem: string): string;
+  var
+  thisQuery: tAdoQuery;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+  thisQuery.Connection := form1.adoConnHtmlPages;
+  with thisQuery do begin
+    SQL.Clear;
+    SQL.add('select placeHolderString from tb910_placeholders where functionName = :loadItem');
+    Parameters.ParamByName('loadItem').Value := htmlItem;
+    open;
+    Result := fields[0].AsString;
+  end;
+end;
+
 
 function storeTempTrafoSettings(myIp, myTrafoType, Part, pickedValues: String): string;
   var
