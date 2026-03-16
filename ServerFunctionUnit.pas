@@ -27,6 +27,107 @@ interface
   function checkUnfinishedTrafo(myIp: string): string;
 
 implementation
+const
+  fluxDensity = 1;
+  filamentFiveVolts = 5;
+  filamentSixVolts = 6.3;
+  filamentTwelveVolts = 12.6;
+
+
+function calculatePowerTrafo(myIp, fixValue: String): string;
+  var
+  htmlQuery, customerQuery: tAdoQuery;
+  primVoltage, primFreq, primaryAmps: single;
+  secVoltage, secMilliAmps: single;
+  primaryVA, coreArea, grossCoreArea, turnsPerVolt, primWireSize, primaryTurns: single;
+  secundaryTurns, secWireSize: single;
+  filFiveAmps, filSixAmps, filTwelveAmps: single;
+  filFiveTurns, filSixTurns, filTwelveTurns: single;
+  filFiveWireSize, filSixWireSize, filTwelveWireSize: single;
+  secCenterTap, tapFiftyVolt, filCenterTap: integer;
+  primTurnArea, secTurnArea, fiveVoltTurnArea, sixVoltTurnArea, twelveVoltTurnArea: single;
+begin
+  htmlQuery := tAdoQuery.Create(nil);
+  htmlQuery.Connection := form1.adoConnHtmlPages;
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  if storeTempTrafoSettings(myIp, 'powertrafo', '2', fixValue) = 'ok' then begin
+    powerTrafoSaveFinalizeSpecs(myIp, fixValue);
+
+    with customerQuery, SQL do begin
+      clear;
+      add('select * from tb200_power_trafo_config where ip = :myIp and isClosed = false');
+      Parameters.ParamByName('myIp').Value := myIp;
+      open;
+
+      secVoltage := fieldByName('volts').AsFloat;
+      secMilliAmps := fieldByName('milliAmps').AsFloat;
+      filFiveAmps := fieldByName('filamentFiveAmps').AsFloat;
+      filSixAmps := fieldByName('filamentSixAmps').AsFloat;
+      filTwelveAmps := fieldByName('filamentTwelveAmps').AsFloat;
+      secCenterTap := fieldByName('centerTap').asInteger;
+      tapFiftyVolt := fieldByName('tapFiftyVolt').asInteger;
+      filCenterTap := fieldByName('filamentCenterTap').asInteger;
+    end;
+
+    getGridValues(myIp, primVoltage, primFreq);
+    primaryVA := getSumVASecundary(myIp);
+    primaryAmps := primaryVA / primVoltage;
+    coreArea := sqrt(primaryVA) * 1.15;
+    grossCoreArea := coreArea * 1.1;
+    turnsPerVolt := primFreq / coreArea * fluxDensity;
+    primWireSize := getWireSize(primaryVA, primVoltage);
+    primaryTurns := turnsPerVolt * primVoltage;
+    secundaryTurns := turnsPerVolt * secVoltage;
+    secWireSize := getWireSize(secMilliAmps, true);
+    filFiveTurns := turnsPerVolt * filamentFiveVolts;
+    filSixTurns := turnsPerVolt * filamentSixVolts;
+    filTwelveTurns := turnsPerVolt * filamentTwelveVolts;
+    filFiveWireSize := getWireSize(filFiveAmps, false);
+    filSixWireSize := getWireSize(filSixAmps, false);
+    filTwelveWireSize := getWireSize(filTwelveAmps, false);
+    primTurnArea := calcTurnArea(primWireSize, primaryTurns);
+    secTurnArea := calcTurnArea(secWireSize, secundaryTurns);
+    fiveVoltTurnArea := calcTurnArea(filFiveWireSize, filFiveTurns);
+    sixVoltTurnArea := calcTurnArea(filSixWireSize, filSixTurns);
+    twelveVoltTurnArea := calcTurnArea(filTwelveWireSize, filTwelveTurns);
+
+    result :=          'primary VA = ' + format('%5.0f', [primaryVA]) + '<br>';
+    result := result + 'primary amps = ' + format('%5.2f', [primaryAmps]) + '<br>';
+    result := result + 'turns per volt = ' + format('%5.2f', [turnsPerVolt]) + '<br>';
+    result := result + 'core area = ' + format('%5.2f', [coreArea]) + '<br>' ;
+    result := result + 'primary turns = ' + format('%5.0f', [primaryTurns]) + '<br>' ;
+    result := result + 'primary wire size = ' + format('%5.2f', [primWireSize]) + '<br>' ;
+    result := result + 'secundary turns = ' + format('%5.0f', [secundaryTurns]) + '<br>' ;
+    result := result + 'secundary wire size = ' + format('%5.2f', [secWireSize])+ '<br>' ;
+    if tapFiftyVolt = 1 then result := result + 'fifty volt tap = ' + format('%5.0f', [50 * turnsPerVolt]) + ' turns <br>' ;
+    if secCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [secundaryTurns / 2]) + ' turns <br>' ;
+    if filFiveAmps > 0 then begin
+      result := result + '5 volt filament turns = ' + format('%5.0f', [filFiveTurns]) + '<br>' ;
+      if filCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [filFiveTurns / 2]) + ' turns <br>' ;
+      result := result + '5 volt filament wire size = ' + format('%5.2f', [filFiveWireSize]) + '<br>' ;
+    end;
+    if filSixAmps > 0 then begin
+      result := result + '6.3 volt filament turns = ' + format('%5.0f', [filSixTurns]) + '<br>' ;
+      if filCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [filSixTurns / 2]) + ' turns <br>' ;
+      result := result + '6.3 volt wire size = ' + format('%5.2f', [filSixWireSize]) + '<br>' ;
+    end;
+    if filTwelveAmps > 0 then begin
+      result := result + '12.6 volt filament turns = ' + format('%5.0f', [filTwelveTurns]) + '<br>' ;
+      if filCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [filTwelveTurns / 2]) + ' turns <br>' ;
+      result := result + '12.6 volt wire size = ' + format('%5.2f', [filTwelveWireSize]) + '<br>';
+    end;
+    result := result + '<br>primary turn area = ' + format('%5.2f', [primTurnArea]) + '<br>';
+    result := result + 'secundary turn area = ' + format('%5.2f', [secTurnArea]) + '<br>';
+    result := result + '5 volt turn area = ' + format('%5.2f', [fiveVoltTurnArea]) + '<br>';
+    result := result + '6.3 volt turn area = ' + format('%5.2f', [sixVoltTurnArea]) + '<br>';
+    result := result + '12.6 volt turn area = ' + format('%5.2f', [twelveVoltTurnArea]) + '<br>';
+    result := result + '<br>total turn area = ' + format('%5.2f', [primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea]) + '<br>';
+    result := result + '<br>suitable iron sheets are: ' + getSuitableEiType(primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea) + '<br>';
+  end;
+end;
+
 
 function checkUnfinishedTrafo(myIp: string): string;
 var
@@ -114,6 +215,9 @@ begin
     if elementParts[0] = 'saveSettings' then saveSettings := '';
     end;
   end;
+  saveGridSettings(myIp, gridVoltage, gridFreq);
+  getAddress(myIp, zipcode, hsNumber, hsNumberTvo);
+  saveSitePrefs(myIp, saveSettings);
   result := checkSettings(myIp);
 end;
 
@@ -228,58 +332,6 @@ begin
     end;
   end;
 end;
-
-
-function calculatePowerTrafo(myIp, fixValue: String): string;
-  var
-  htmlQuery, customerQuery: tAdoQuery;
-  T, tempValue: integer;
-  mainHtml: string;
-begin
-  htmlQuery := tAdoQuery.Create(nil);
-  htmlQuery.Connection := form1.adoConnHtmlPages;
-  customerQuery := tAdoQuery.Create(nil);
-  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
-
-  if storeTempTrafoSettings(myIp, 'powertrafo', '2', fixValue) = 'ok' then begin
-
-    powerTrafoSaveFinalizeSpecs(myIp, fixValue);
-
-    with htmlQuery do begin
-      SQL.Clear;
-      SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
-      Parameters.ParamByName('idName').Value := 'powerTrafoCalculator';
-      Parameters.ParamByName('itemNr').Value := 0;
-      try
-        open;
-      except
-        on E:exception do writelog(E.Message);
-      end;
-      mainHtml := fields[0].AsString;
-      close;
-    end;
-
-    for T := 5 downto 0 do begin
- //     tempValue := binPower(2, T);
-
-//      if (fixValue and tempValue = tempValue) then begin
-//        with htmlQuery do begin
-//          SQL.Clear;
-//          SQL.add('select HtmlCode from TB120_html_snippets where id = :idName and itemNr = :itemNr');
-//          Parameters.ParamByName('idName').Value := 'powerTrafoDetails';
-//          Parameters.ParamByName('itemNr').Value := intToStr(tempValue);
-//          open;
-//          mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), fields[0].AsString);
-//          close;
-//        end;
-//      end else
-//        mainHtml := mainHtml.Replace('$snippet' + intToStr(tempValue), '');
-    end;
-    //result := mainHtml;
-    result := 'dit is de output van: "calculatePowerTrafo"';
-  end;
-end;
-
 
 function getScreen(htmlItem: string): string;
   var

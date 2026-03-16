@@ -17,15 +17,69 @@ interface
   function readEntireFile(fileName: String): String;
   function getTrafoBinValue(myIp: string): integer;
   function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: string): string;
+  function getSumVaSecundary(myIp: string): single;
+  function getWireSize(secAmps: single; isMilliAmps: boolean): single; overload;
+  function getWireSize(primVa, primVoltage: single): single; overload;
+  function calcTurnArea(d, N: single): single;
+  function getSuitableEiType(calculatedWindowsArea: single): string;
 
 implementation
-  uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
+uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
 
-  const
-    netVoltage = 230;
-    frequency = 50;
-    fluxDensity = 1;
+const
+  fluxDensity = 1;
+  filamentFiveVolts = 5;
+  filamentSixVolts = 6.3;
+  filamentTwelveVolts = 12.6;
 
+function calcTurnArea(d, N: single): single;
+const
+  Fv = 0.22 ;
+begin
+  result := ((N * sqr(d)) / Fv)/100
+end;
+
+function getSuitableEiType(calculatedWindowsArea: single): string;
+var
+  thisQuery: tAdoQuery;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+  with thisQuery do begin
+    connection := Form1.adoConnHtmlPages;
+
+    SQL.add('select min(OppervlakVensters), TypeAanduiding from tb250_trafoblik where OppervlakVensters >= :WindowArea');
+    Parameters.ParamByName('WindowArea').Value := calculatedWindowsArea;
+    Open;
+    Result := fields[1].AsString;
+
+    if result = '' then raise exception.Create('no suitable sheets found for these values');
+  end;
+end;
+
+
+function getSumVaSecundary(myIp: string): single;
+  var
+    customerQuery: tAdoQuery;
+    primaryVA: single;
+  begin
+    customerQuery := tAdoQuery.Create(nil);
+    customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+    primaryVA := 0;
+
+    with customerQuery, SQL do begin
+      clear;
+      add('select * from vw205_power_trafo_all where ip = :myIp');
+      Parameters.ParamByName('myIp').Value := myIp;
+      open;
+
+      primaryVA := primaryVA + fieldByName('volts').asFloat * (fieldByName('milliAmps').asFloat / 1000);
+      primaryVA := primaryVA + fieldByName('filamentFiveAmps').asFloat * filamentFiveVolts;
+      primaryVA := primaryVA + fieldByName('filamentSixAmps').asFloat * filamentSixVolts;
+      primaryVA := primaryVA + fieldByName('filamentTwelveAmps').asFloat * filamentTwelveVolts;
+      primaryVA := primaryVA / 0.9;
+      result := primaryVA;
+    end;
+  end;
 
 function getTrafoBinValue(myIp: string): integer;
   var
@@ -42,7 +96,7 @@ function getTrafoBinValue(myIp: string): integer;
     end;
   end;
 
-   function storeSessionSettings(myIp: string): string;
+function storeSessionSettings(myIp: string): string;
     var
     thisQuery: tAdoQuery;
     newTimeStamp: string;
@@ -68,7 +122,7 @@ function getTrafoBinValue(myIp: string): integer;
     end;
   end;
 
-  function updateSessionSettings(myIp: string): string;
+function updateSessionSettings(myIp: string): string;
     var
     thisQuery: tAdoQuery;
   begin
@@ -217,6 +271,54 @@ begin
     readFile: TFile;
   begin
     result := readfile.ReadAllText(FileName);
+  end;
+
+  function getWireSize(primVa, primVoltage: single): single; overload;
+  var
+    thisQuery: tAdoQuery;
+    current: single;
+  begin
+    thisQuery := tAdoQuery.Create(nil);
+    current := primVA / primVoltage;
+    result := 0;
+
+    with thisQuery do begin
+      connection := form1.adoConnHtmlPages;
+      SQL.add('select min(diameter) from tb230_draad_metrisch where MaxAmp >= :amperage');
+      Parameters.ParamByName('amperage').Value := current;
+      try
+        Open;
+        Result := fields[0].AsFloat;
+      except
+        on E:exception do writelog(E.Message);
+      end;
+    end;
+  end;
+
+  function getWireSize(secAmps: single; isMilliAmps: boolean): single; overload;
+  var
+    thisQuery: tAdoQuery;
+    current: single;
+  begin
+    thisQuery := tAdoQuery.Create(nil);
+    result := 0;
+
+    if isMilliAmps then
+      current := secAmps / 1000
+    else
+      current := secAmps;
+
+    with thisQuery do begin
+      connection := form1.adoConnHtmlPages;
+      SQL.add('select min(diameter) from tb230_draad_metrisch where MaxAmp >= :amperage');
+      Parameters.ParamByName('amperage').Value := current;
+      try
+        Open;
+        Result := fields[0].AsFloat;
+      except
+        on E:exception do writelog(E.Message);
+      end;
+    end;
   end;
 
 

@@ -10,13 +10,36 @@ interface
   procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
   procedure writeToFile(fileName,fileContent: String);
   procedure runCmd(const ExecutableName, Parameters: string);
-  procedure createSlideShow;
+  procedure getGridValues(myIp: string; var gridVoltage, gridFrequency: single);
   procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: string);
 
 implementation
   uses FormUnit1, dialogs, CommonFunctionUnit, FindFiles;
   var
     primVA: single;
+
+  procedure getGridValues(myIp: string; var gridVoltage, gridFrequency: single);
+  var
+    thisQuery: tAdoQuery;
+  begin
+    thisQuery := tAdoQuery.Create(nil);
+    thisQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+    with thisQuery do begin
+      SQL.Clear;
+      SQL.add('select VoltageElectraGrid, FreqElectraGrid from vw205_power_trafo_all where ip = :ip and VoltageElectraGrid <> ""');
+      Parameters.ParamByName('ip').Value := myIp;
+      open;
+      if recordCount = 0 then begin
+        SQL.Clear;
+        SQL.add('select VoltageElectraGrid, FreqElectraGrid from tb930_grid_settings_per_ip where ip = :ip');
+        Parameters.ParamByName('ip').Value := 'localhost';
+        open;
+      end;
+      gridVoltage := fields[0].AsInteger;
+      gridFrequency := fields[1].AsInteger;
+  end;
+  end;
 
   procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: string);
   var
@@ -27,12 +50,14 @@ implementation
   boolValue: TStrArray;
   intValue: TIntArray;
   hulp: string;
+
   begin
     htmlQuery := tAdoQuery.Create(nil);
     htmlQuery.Connection := form1.adoConnHtmlPages;
     customerQuery := tAdoQuery.Create(nil);
     customerQuery.Connection := form1.adoVoorThuisCustomerSales;
-    boolValue := TStrArray.create('centerTap', 'tapFiftyVolt', 'filamentCenterTap');
+
+    boolValue := TStrArray.create('centerTap', 'filamentCenterTap', 'tapFiftyVolt');
     intValue := TIntArray.create(1, 5, 6);
     binValue := getTrafoBinValue(myIp);
     parts := fixValue.Split(['-']);
@@ -70,6 +95,14 @@ implementation
           end;
         end;
       end;
+    end;
+
+    //als de boolean centertap = true dan moet het secundaire voltage verdubbeld worden
+    with customerQuery, SQL do begin
+      clear;
+      add('update tb200_power_trafo_config SET volts = volts * 2 WHERE ip = :myIp AND isClosed = FALSE AND centertap = TRUE');
+      Parameters.ParamByName('myIp').Value := myIp;
+      execSQL;
     end;
   end;
 
