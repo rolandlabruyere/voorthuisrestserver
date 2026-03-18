@@ -26,15 +26,9 @@ interface
 implementation
 uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
 
-const
-  fluxDensity = 1;
-  filamentFiveVolts = 5;
-  filamentSixVolts = 6.3;
-  filamentTwelveVolts = 12.6;
-
 function calcTurnArea(d, N: single): single;
 const
-  Fv = 0.22 ;
+  Fv = 0.25 ;
 begin
   result := ((N * sqr(d)) / Fv)/100
 end;

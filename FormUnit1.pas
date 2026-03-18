@@ -36,6 +36,12 @@ type
 
 var
   Form1: TForm1;
+const
+  fluxDensity = 1;
+  filamentFiveVolts = 5;
+  filamentSixVolts = 6.3;
+  filamentTwelveVolts = 12.6;
+
 
 implementation
 

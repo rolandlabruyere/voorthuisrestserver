@@ -27,30 +27,36 @@ interface
   function checkUnfinishedTrafo(myIp: string): string;
 
 implementation
-const
-  fluxDensity = 1;
-  filamentFiveVolts = 5;
-  filamentSixVolts = 6.3;
-  filamentTwelveVolts = 12.6;
-
 
 function calculatePowerTrafo(myIp, fixValue: String): string;
   var
-  htmlQuery, customerQuery: tAdoQuery;
-  primVoltage, primFreq, primaryAmps: single;
-  secVoltage, secMilliAmps: single;
-  primaryVA, coreArea, grossCoreArea, turnsPerVolt, primWireSize, primaryTurns: single;
-  secundaryTurns, secWireSize: single;
-  filFiveAmps, filSixAmps, filTwelveAmps: single;
-  filFiveTurns, filSixTurns, filTwelveTurns: single;
-  filFiveWireSize, filSixWireSize, filTwelveWireSize: single;
-  secCenterTap, tapFiftyVolt, filCenterTap: integer;
-  primTurnArea, secTurnArea, fiveVoltTurnArea, sixVoltTurnArea, twelveVoltTurnArea: single;
+    htmlQuery, customerQuery: tAdoQuery;
+    exportHtml, placeHoldersAll, placeBoolsAll: string;
+    placeHolders, placeBools: TArray<String>;
+    T, secCenterTap, tapFiftyVolt, filCenterTap: integer;
+
+    primVoltage, primFreq, primaryAmps, secVoltage, secMilliAmps,
+    primaryVA, coreArea, turnsPerVolt, primWireSize,
+    primaryTurns, secundaryTurns, fiftyVoltTapTurns, secCenterTapTurns,
+    secWireSize, filFiveAmps, filSixAmps, filTwelveAmps, filFiveTurns,
+    filSixTurns, filTwelveTurns, filFiveWireSize, filSixWireSize,
+    filTwelveWireSize, primTurnArea, secTurnArea, fiveVoltTurnArea,
+    sixVoltTurnArea, twelveVoltTurnArea, filFiveCTturns, filSixCTturns,
+    filTwelveCTturns: single;
+    itemValues: array[0..25] of string;
+  const
+    htmlItem = 'calculatedTrafoSpecs';
 begin
   htmlQuery := tAdoQuery.Create(nil);
   htmlQuery.Connection := form1.adoConnHtmlPages;
   customerQuery := tAdoQuery.Create(nil);
   customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+  exportHtml := getScreen(htmlItem);
+  placeHoldersAll := getPlaceholders(htmlItem);
+  placeBoolsAll := getPlaceholders(htmlItem + 'Bools');
+  placeHolders := placeHoldersAll.Split(['|']);
+  placeBools := placeBoolsAll.Split(['|']);
 
   if storeTempTrafoSettings(myIp, 'powertrafo', '2', fixValue) = 'ok' then begin
     powerTrafoSaveFinalizeSpecs(myIp, fixValue);
@@ -72,59 +78,71 @@ begin
     end;
 
     getGridValues(myIp, primVoltage, primFreq);
-    primaryVA := getSumVASecundary(myIp);
-    primaryAmps := primaryVA / primVoltage;
-    coreArea := sqrt(primaryVA) * 1.15;
-    grossCoreArea := coreArea * 1.1;
-    turnsPerVolt := primFreq / coreArea * fluxDensity;
-    primWireSize := getWireSize(primaryVA, primVoltage);
-    primaryTurns := turnsPerVolt * primVoltage;
-    secundaryTurns := turnsPerVolt * secVoltage;
-    secWireSize := getWireSize(secMilliAmps, true);
-    filFiveTurns := turnsPerVolt * filamentFiveVolts;
-    filSixTurns := turnsPerVolt * filamentSixVolts;
-    filTwelveTurns := turnsPerVolt * filamentTwelveVolts;
-    filFiveWireSize := getWireSize(filFiveAmps, false);
-    filSixWireSize := getWireSize(filSixAmps, false);
-    filTwelveWireSize := getWireSize(filTwelveAmps, false);
-    primTurnArea := calcTurnArea(primWireSize, primaryTurns);
-    secTurnArea := calcTurnArea(secWireSize, secundaryTurns);
-    fiveVoltTurnArea := calcTurnArea(filFiveWireSize, filFiveTurns);
-    sixVoltTurnArea := calcTurnArea(filSixWireSize, filSixTurns);
+
+    //hier starten de berekeningen
+    primaryVA          := getSumVASecundary(myIp);
+    primaryAmps        := primaryVA / primVoltage;
+    coreArea           := sqrt(primaryVA) * 1.15;
+    turnsPerVolt       := primFreq / coreArea * fluxDensity;
+    primWireSize       := getWireSize(primaryVA, primVoltage);
+    primaryTurns       := turnsPerVolt * primVoltage;
+    secundaryTurns     := turnsPerVolt * secVoltage;
+    fiftyVoltTapTurns  := 50 * turnsPerVolt;
+    secCenterTapTurns  := secundaryTurns / 2;
+    secWireSize        := getWireSize(secMilliAmps, true);
+    filFiveTurns       := turnsPerVolt * filamentFiveVolts;
+    filFiveCTturns     := filFiveTurns / 2;
+    filSixTurns        := turnsPerVolt * filamentSixVolts;
+    filSixCTturns      := filSixTurns / 2;
+    filTwelveTurns     := turnsPerVolt * filamentTwelveVolts;
+    filTwelveCTturns   := filTwelveTurns / 2;
+    filFiveWireSize    := getWireSize(filFiveAmps, false);
+    filSixWireSize     := getWireSize(filSixAmps, false);
+    filTwelveWireSize  := getWireSize(filTwelveAmps, false);
+    primTurnArea       := calcTurnArea(primWireSize, primaryTurns);
+    secTurnArea        := calcTurnArea(secWireSize, secundaryTurns);
+    fiveVoltTurnArea   := calcTurnArea(filFiveWireSize, filFiveTurns);
+    sixVoltTurnArea    := calcTurnArea(filSixWireSize, filSixTurns);
     twelveVoltTurnArea := calcTurnArea(filTwelveWireSize, filTwelveTurns);
 
-    result :=          'primary VA = ' + format('%5.0f', [primaryVA]) + '<br>';
-    result := result + 'primary amps = ' + format('%5.2f', [primaryAmps]) + '<br>';
-    result := result + 'turns per volt = ' + format('%5.2f', [turnsPerVolt]) + '<br>';
-    result := result + 'core area = ' + format('%5.2f', [coreArea]) + '<br>' ;
-    result := result + 'primary turns = ' + format('%5.0f', [primaryTurns]) + '<br>' ;
-    result := result + 'primary wire size = ' + format('%5.2f', [primWireSize]) + '<br>' ;
-    result := result + 'secundary turns = ' + format('%5.0f', [secundaryTurns]) + '<br>' ;
-    result := result + 'secundary wire size = ' + format('%5.2f', [secWireSize])+ '<br>' ;
-    if tapFiftyVolt = 1 then result := result + 'fifty volt tap = ' + format('%5.0f', [50 * turnsPerVolt]) + ' turns <br>' ;
-    if secCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [secundaryTurns / 2]) + ' turns <br>' ;
-    if filFiveAmps > 0 then begin
-      result := result + '5 volt filament turns = ' + format('%5.0f', [filFiveTurns]) + '<br>' ;
-      if filCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [filFiveTurns / 2]) + ' turns <br>' ;
-      result := result + '5 volt filament wire size = ' + format('%5.2f', [filFiveWireSize]) + '<br>' ;
-    end;
-    if filSixAmps > 0 then begin
-      result := result + '6.3 volt filament turns = ' + format('%5.0f', [filSixTurns]) + '<br>' ;
-      if filCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [filSixTurns / 2]) + ' turns <br>' ;
-      result := result + '6.3 volt wire size = ' + format('%5.2f', [filSixWireSize]) + '<br>' ;
-    end;
-    if filTwelveAmps > 0 then begin
-      result := result + '12.6 volt filament turns = ' + format('%5.0f', [filTwelveTurns]) + '<br>' ;
-      if filCenterTap = 1 then result := result + 'centertap = ' + format('%5.0f', [filTwelveTurns / 2]) + ' turns <br>' ;
-      result := result + '12.6 volt wire size = ' + format('%5.2f', [filTwelveWireSize]) + '<br>';
-    end;
-    result := result + '<br>primary turn area = ' + format('%5.2f', [primTurnArea]) + '<br>';
-    result := result + 'secundary turn area = ' + format('%5.2f', [secTurnArea]) + '<br>';
-    result := result + '5 volt turn area = ' + format('%5.2f', [fiveVoltTurnArea]) + '<br>';
-    result := result + '6.3 volt turn area = ' + format('%5.2f', [sixVoltTurnArea]) + '<br>';
-    result := result + '12.6 volt turn area = ' + format('%5.2f', [twelveVoltTurnArea]) + '<br>';
-    result := result + '<br>total turn area = ' + format('%5.2f', [primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea]) + '<br>';
-    result := result + '<br>suitable iron sheets are: ' + getSuitableEiType(primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea) + '<br>';
+    //vervang de placeholders door de berekende waarden
+    itemValues[00] := format('%5.0f', [primaryVA]).trim;
+    itemValues[01] := format('%5.2f', [primaryAmps]).trim;
+    itemValues[02] := format('%5.2f', [coreArea]).trim;
+    itemValues[03] := format('%5.2f', [turnsPerVolt]).trim;
+    itemValues[04] := format('%5.2f', [primWireSize]).trim;
+    itemValues[05] := format('%5.0f', [primaryTurns]).trim;
+    itemValues[06] := format('%5.0f', [secundaryTurns]).trim;
+    itemValues[07] := format('%5.0f', [fiftyVoltTapTurns]).trim;
+    itemValues[08] := format('%5.0f', [secCenterTapTurns]).trim;
+    itemValues[09] := format('%5.2f', [secWireSize]).trim;
+    itemValues[10] := format('%5.0f', [filFiveTurns]).trim;
+    itemValues[11] := format('%5.0f', [filFiveCTturns]).trim;
+    itemValues[12] := format('%5.2f', [filFiveWireSize]).trim;
+    itemValues[13] := format('%5.0f', [filSixTurns]).trim;
+    itemValues[14] := format('%5.0f', [filSixCTturns]).trim;
+    itemValues[15] := format('%5.2f', [filSixWireSize]).trim;
+    itemValues[16] := format('%5.0f', [filTwelveTurns]).trim;
+    itemValues[17] := format('%5.0f', [filTwelveCTturns]).trim;
+    itemValues[18] := format('%5.2f', [filTwelveWireSize]).trim;
+    itemValues[19] := format('%5.2f', [primTurnArea]).trim;
+    itemValues[20] := format('%5.2f', [secTurnArea]).trim;
+    itemValues[21] := format('%5.2f', [fiveVoltTurnArea]).trim;
+    itemValues[22] := format('%5.2f', [sixVoltTurnArea]).trim;
+    itemValues[23] := format('%5.2f', [twelveVoltTurnArea]).trim;
+    itemValues[24] := format('%5.2f', [primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea]).trim;
+    itemValues[25] := getSuitableEiType(primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea);
+
+    for T := 0 to length(placeholders) do exportHtml := exportHtml.Replace(placeHolders[T], itemValues[T]);
+
+    if tapFiftyVolt      = 0 then exportHtml := exportHtml.Replace(placeBools[0],'hidden') else exportHtml.Replace(placeBools[0],'');
+    if secCenterTap      = 0 then exportHtml := exportHtml.Replace(placeBools[1],'hidden') else exportHtml.Replace(placeBools[1],'');
+    if filCenterTap      = 0 then exportHtml := exportHtml.Replace(placeBools[2],'hidden') else exportHtml.Replace(placeBools[2],'');
+    if filFiveWireSize   = 0 then exportHtml := exportHtml.Replace(placeBools[3],'hidden') else exportHtml.Replace(placeBools[3],'');
+    if filSixWireSize    = 0 then exportHtml := exportHtml.Replace(placeBools[4],'hidden') else exportHtml.Replace(placeBools[4],'');
+    if filTwelveWireSize = 0 then exportHtml := exportHtml.Replace(placeBools[5],'hidden') else exportHtml.Replace(placeBools[5],'');
+
+    result := exportHtml;
   end;
 end;
 
