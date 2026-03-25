@@ -12,12 +12,28 @@ interface
   procedure runCmd(const ExecutableName, Parameters: string);
   procedure getGridValues(myIp: string; var gridVoltage, gridFrequency: single);
   procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: string);
+  procedure closeTrafoConfig(myIp, trafoNum: string);
 
 implementation
   uses FormUnit1, dialogs, CommonFunctionUnit, FindFiles;
   var
     primVA: single;
 
+  procedure closeTrafoConfig(myIp, trafoNum: string);
+    var
+      thisQuery: tAdoQuery;
+    begin
+      thisQuery := tAdoQuery.Create(nil);
+      thisQuery.Connection := form1.adoVoorThuisCustomerSales;
+
+      with thisQuery do begin
+        SQL.Clear;
+        SQL.add('update tb200_power_trafo_config set isClosed = true where ip = :myIp and trafoNum = :trafoNumber and isClosed = false');
+        Parameters.ParamByName('myIp').Value := myIp;
+        Parameters.ParamByName('trafoNumber').Value := trafoNum;
+        execSql;
+      end;
+  end;
   procedure getGridValues(myIp: string; var gridVoltage, gridFrequency: single);
   var
     thisQuery: tAdoQuery;

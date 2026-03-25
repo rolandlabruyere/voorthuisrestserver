@@ -25,13 +25,103 @@ interface
   function checkSettings(myIp: string): string;
   function showStoredSettings(myIp: string; thisQuery: tAdoQuery): string;
   function checkUnfinishedTrafo(myIp: string): string;
+  function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: string; allSpecs: array of string): boolean;
+  function prepareTrafoSales(myIp, trafoNumber: string): string;
 
 implementation
+
+function prepareTrafoSales(myIp, trafoNumber: string): string;
+var
+  //htmlQuery: tAdoQuery;
+
+  returnHTML, placeHolderAll: string;
+  placeHolders: TArray<String>;
+
+begin
+  //htmlQuery := tAdoQuery.Create(nil);
+  //htmlQuery.Connection := form1.adoConnHtmlPages;
+  returnHTML := getScreen('finalizeTrafo');
+  placeHolderAll := getPlaceHolders('finalizeTrafo');
+  placeHolders := placeHolderAll.Split(['|']);
+  returnHTML := returnHTML.Replace(placeHolders[0], trafoNumber);
+
+  closeTrafoConfig(myIp, trafoNumber);
+  result := returnHTML;
+end;
+
+function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: string; allSpecs: array of string): boolean;
+var
+  customerQuery: tAdoQuery;
+begin
+  customerQuery := tAdoQuery.Create(nil);
+  customerQuery.Connection := form1.adoVoorThuisCustomerSales;
+  result := false;
+
+  with customerQuery, SQL do begin
+    clear;
+    add('delete from tb210_power_trafo_calcspecs where ip = :myIp and trafoNum = :thisTrafoNum');
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('thisTrafoNum').Value := thisTrafoNum;
+    try
+      execSql;
+    except
+      on E:exception do begin
+        writelog(E.Message);
+      end;
+    end;
+
+    clear;
+    add('insert into tb210_power_trafo_calcspecs values (:myIp, :thisTrafoNum, :isClosed, :isOrdered, :hasDownloadedSchematic, :primaryVA,' +
+        ':primaryAmps, :coreArea, :turnsPerVolt, :primWireSize, :primaryTurns, :secundaryTurns, :fiftyVoltTapTurns, :secCenterTapTurns, ' +
+        ':secWireSize, :filFiveTurns, :filFiveCtTurns, :filFiveWireSize, :filSixTurns, :filSixCtTurns, :filSixWireSize, :filTwelveTurns,' +
+        ':filTwelveCtTurns, :filTwelveWireSize, :primTurnArea, :secTurnArea, :fiveVoltTurnArea, :sixVoltTurnArea, :twelveVoltTurnArea, ' +
+        ':totalTurnArea, :sizeEiSheets, :timestamp)');
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('thisTrafoNum').Value := thisTrafoNum;
+    Parameters.ParamByName('isClosed').Value := false;
+    Parameters.ParamByName('isOrdered').Value := false;
+    Parameters.ParamByName('hasDownloadedSchematic').Value := false;
+    Parameters.ParamByName('primaryVA').Value := allSpecs[0];
+    Parameters.ParamByName('primaryAmps').Value := allSpecs[1];
+    Parameters.ParamByName('coreArea').Value := allSpecs[2];
+    Parameters.ParamByName('turnsPerVolt').Value := allSpecs[3];
+    Parameters.ParamByName('primWireSize').Value := allSpecs[4];
+    Parameters.ParamByName('primaryTurns').Value := allSpecs[5];
+    Parameters.ParamByName('secundaryTurns').Value := allSpecs[6];
+    Parameters.ParamByName('fiftyVoltTapTurns').Value := allSpecs[7];
+    Parameters.ParamByName('secCenterTapTurns').Value := allSpecs[8];
+    Parameters.ParamByName('secWireSize').Value := allSpecs[9];
+    Parameters.ParamByName('filFiveTurns').Value := allSpecs[10];
+    Parameters.ParamByName('filFiveCtTurns').Value := allSpecs[11];
+    Parameters.ParamByName('filFiveWireSize').Value := allSpecs[12];
+    Parameters.ParamByName('filSixTurns').Value := allSpecs[13];
+    Parameters.ParamByName('filSixCtTurns').Value := allSpecs[14];
+    Parameters.ParamByName('filSixWireSize').Value := allSpecs[15];
+    Parameters.ParamByName('filTwelveTurns').Value := allSpecs[16];
+    Parameters.ParamByName('filTwelveCtTurns').Value := allSpecs[17];
+    Parameters.ParamByName('filTwelveWireSize').Value := allSpecs[18];
+    Parameters.ParamByName('primTurnArea').Value := allSpecs[19];
+    Parameters.ParamByName('secTurnArea').Value := allSpecs[20];
+    Parameters.ParamByName('fiveVoltTurnArea').Value := allSpecs[21];
+    Parameters.ParamByName('sixVoltTurnArea').Value := allSpecs[22];
+    Parameters.ParamByName('twelveVoltTurnArea').Value := allSpecs[23];
+    Parameters.ParamByName('totalTurnArea').Value := allSpecs[24];
+    Parameters.ParamByName('sizeEiSheets').Value := allSpecs[25];
+    Parameters.ParamByName('timestamp').Value := generateTimeStamp;
+
+    try
+      execSql;
+      result := true;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
+end;
 
 function calculatePowerTrafo(myIp, fixValue: String): string;
   var
     htmlQuery, customerQuery: tAdoQuery;
-    exportHtml, placeHoldersAll, placeBoolsAll: string;
+    trafoNum, exportHtml, placeHoldersAll, placeBoolsAll: string;
     placeHolders, placeBools: TArray<String>;
     T, secCenterTap, tapFiftyVolt, filCenterTap: integer;
 
@@ -43,7 +133,7 @@ function calculatePowerTrafo(myIp, fixValue: String): string;
     filTwelveWireSize, primTurnArea, secTurnArea, fiveVoltTurnArea,
     sixVoltTurnArea, twelveVoltTurnArea, filFiveCTturns, filSixCTturns,
     filTwelveCTturns: single;
-    itemValues: array[0..25] of string;
+    itemValues: array[0..26] of string;
   const
     htmlItem = 'calculatedTrafoSpecs';
 begin
@@ -67,6 +157,7 @@ begin
       Parameters.ParamByName('myIp').Value := myIp;
       open;
 
+      trafoNum := fieldByName('trafoNum').AsString;
       secVoltage := fieldByName('volts').AsFloat;
       secMilliAmps := fieldByName('milliAmps').AsFloat;
       filFiveAmps := fieldByName('filamentFiveAmps').AsFloat;
@@ -80,7 +171,7 @@ begin
     getGridValues(myIp, primVoltage, primFreq);
 
     //hier starten de berekeningen
-    primaryVA          := getSumVASecundary(myIp);
+    primaryVA          := getSumVASecundary(myIp, trafoNum);
     primaryAmps        := primaryVA / primVoltage;
     coreArea           := sqrt(primaryVA) * 1.15;
     turnsPerVolt       := primFreq / coreArea * fluxDensity;
@@ -132,20 +223,51 @@ begin
     itemValues[23] := format('%5.2f', [twelveVoltTurnArea]).trim;
     itemValues[24] := format('%5.2f', [primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea]).trim;
     itemValues[25] := getSuitableEiType(primTurnArea + secTurnArea + fiveVoltTurnArea + sixVoltTurnArea + twelveVoltTurnArea);
+    itemValues[26] := trafoNum;
 
     for T := 0 to length(placeholders) do exportHtml := exportHtml.Replace(placeHolders[T], itemValues[T]);
 
-    if tapFiftyVolt      = 0 then exportHtml := exportHtml.Replace(placeBools[0],'hidden') else exportHtml.Replace(placeBools[0],'');
-    if secCenterTap      = 0 then exportHtml := exportHtml.Replace(placeBools[1],'hidden') else exportHtml.Replace(placeBools[1],'');
-    if filCenterTap      = 0 then exportHtml := exportHtml.Replace(placeBools[2],'hidden') else exportHtml.Replace(placeBools[2],'');
-    if filFiveWireSize   = 0 then exportHtml := exportHtml.Replace(placeBools[3],'hidden') else exportHtml.Replace(placeBools[3],'');
-    if filSixWireSize    = 0 then exportHtml := exportHtml.Replace(placeBools[4],'hidden') else exportHtml.Replace(placeBools[4],'');
-    if filTwelveWireSize = 0 then exportHtml := exportHtml.Replace(placeBools[5],'hidden') else exportHtml.Replace(placeBools[5],'');
+    if tapFiftyVolt = 0 then begin
+      exportHtml := exportHtml.Replace(placeBools[0],'hidden');
+      itemValues[07] := '0';
+    end else exportHtml.Replace(placeBools[0],'');
 
-    result := exportHtml;
+    if secCenterTap = 0 then begin
+      exportHtml := exportHtml.Replace(placeBools[1],'hidden');
+      itemValues[08] := '0'
+    end else exportHtml.Replace(placeBools[1],'');
+
+    if filCenterTap = 0 then begin
+      exportHtml := exportHtml.Replace(placeBools[2],'hidden');
+      itemValues[11] := '0';
+      itemValues[14] := '0';
+      itemValues[17] := '0';
+    end else exportHtml.Replace(placeBools[2],'');
+
+    if filFiveWireSize   = 0 then begin
+      exportHtml := exportHtml.Replace(placeBools[3],'hidden');
+      itemValues[10] := '0';
+      itemValues[11] := '0';
+      itemValues[12] := '0.00';
+    end else exportHtml.Replace(placeBools[3],'');
+
+    if filSixWireSize    = 0 then begin
+      exportHtml := exportHtml.Replace(placeBools[4],'hidden');
+      itemValues[13] := '0';
+      itemValues[14] := '0';
+      itemValues[15] := '0.00';
+    end else exportHtml.Replace(placeBools[4],'');
+
+    if filTwelveWireSize = 0 then begin
+      exportHtml := exportHtml.Replace(placeBools[5],'hidden');
+      itemValues[16] := '0';
+      itemValues[17] := '0';
+      itemValues[18] := '0.00';
+    end else exportHtml.Replace(placeBools[5],'');
+
+    if saveCalculatedTrafoSpecs(myIp, trafoNum, itemValues) then result := exportHtml;
   end;
 end;
-
 
 function checkUnfinishedTrafo(myIp: string): string;
 var
@@ -242,7 +364,6 @@ end;
 function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: string): string;
 var
   customerQuery: tAdoQuery;
-  parts: TArray<String>;
 begin
   customerQuery := tAdoQuery.Create(nil);
   customerQuery.Connection := form1.adoVoorThuisCustomerSales;

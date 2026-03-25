@@ -121,6 +121,7 @@ const Menu = ({ items }) => {
       onMouseEnter: () => {setActive(menuIndex);},
       onClick: () => {
 			getPage(item.name, "contentDiv", objectBin);
+			getPage("clear", "vertMenuDiv","");
 			objectBin = 1;
 			savedValues = "";
 		 },

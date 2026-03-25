@@ -17,7 +17,7 @@ interface
   function readEntireFile(fileName: String): String;
   function getTrafoBinValue(myIp: string): integer;
   function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: string): string;
-  function getSumVaSecundary(myIp: string): single;
+  function getSumVaSecundary(myIp, trafoNum: string): single;
   function getWireSize(secAmps: single; isMilliAmps: boolean): single; overload;
   function getWireSize(primVa, primVoltage: single): single; overload;
   function calcTurnArea(d, N: single): single;
@@ -51,7 +51,7 @@ begin
 end;
 
 
-function getSumVaSecundary(myIp: string): single;
+function getSumVaSecundary(myIp, trafoNum: string): single;
   var
     customerQuery: tAdoQuery;
     primaryVA: single;
@@ -62,8 +62,9 @@ function getSumVaSecundary(myIp: string): single;
 
     with customerQuery, SQL do begin
       clear;
-      add('select * from vw205_power_trafo_all where ip = :myIp');
+      add('select * from vw205_power_trafo_all where ip = :myIp and trafoNum = :trafoNum');
       Parameters.ParamByName('myIp').Value := myIp;
+      Parameters.ParamByName('trafoNum').Value := trafoNum;
       open;
 
       primaryVA := primaryVA + fieldByName('volts').asFloat * (fieldByName('milliAmps').asFloat / 1000);
