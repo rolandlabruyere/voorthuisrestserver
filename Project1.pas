@@ -16,7 +16,8 @@ uses
   JasonConstructorUnit in 'OverlayUnits\JasonConstructorUnit.pas',
   JasonReaderUnit in 'OverlayUnits\JasonReaderUnit.pas',
   RestUnit in 'OverlayUnits\RestUnit.pas',
-  FindFiles in 'OverlayUnits\FindFiles.pas';
+  FindFiles in 'OverlayUnits\FindFiles.pas',
+  PrinterServerUnit in 'OverlayUnits\PrinterServerUnit.pas';
 
 {$R *.res}
 

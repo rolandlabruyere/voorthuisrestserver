@@ -2,7 +2,7 @@ unit ServerFunctionUnit;
 
 interface
   uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, System.StrUtils, system.math,
-       CommonProcedureUnit, CommonFunctionUnit;
+       CommonProcedureUnit, CommonFunctionUnit, PrinterServerUnit;
 
   function getScreen(htmlItem: string): string;
   function getPlaceholders(htmlItem: string): string;
@@ -40,11 +40,12 @@ var
 begin
   //htmlQuery := tAdoQuery.Create(nil);
   //htmlQuery.Connection := form1.adoConnHtmlPages;
-  returnHTML := getScreen('finalizeTrafo');
+  returnHTML := getScreen('finalizeTrafoVmenu');
   placeHolderAll := getPlaceHolders('finalizeTrafo');
   placeHolders := placeHolderAll.Split(['|']);
   returnHTML := returnHTML.Replace(placeHolders[0], trafoNumber);
 
+  OpenWordDocument(getcurrentdir + '\templates\doc\wikkelschema.docx');
   closeTrafoConfig(myIp, trafoNumber);
   result := returnHTML;
 end;

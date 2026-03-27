@@ -38,7 +38,7 @@ begin
 
   menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
                 'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings', 'settings', 'powerTrafoSpecs', 'prepareSales', 'clear'];
-  writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
+  //writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
 //    11  : Result := createJsonPayment(25.00, 'VT202503120001');
 //    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));

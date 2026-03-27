@@ -183,6 +183,7 @@ function getCurrentNumber(itemName: string): string;
     htmlQuery: tAdoQuery;
     hulp: integer;
     wYear, wMonth, wDay: Word;
+    CMonth: Word;
 begin
     DecodeDate(Date, wYear, wMonth, wDay);
 
@@ -190,7 +191,7 @@ begin
     htmlQuery.Connection := form1.adoConnHtmlPages;
     with htmlQuery do begin
       SQL.Clear;
-      SQL.Add('select itemnumber from tb900_numberstabel where itemType = :itemType');
+      SQL.Add('select itemNumber from tb900_numberstabel where itemType = :itemType');
       Parameters.ParamByName('itemType').Value := itemName;
       open;
       hulp := fields[0].AsInteger;
@@ -206,8 +207,10 @@ begin
       execSQL;
 
       SQL.Clear;
-      SQL.Add('insert into tb900_numberstabel(itemType, itemNumber) values (:itemType, :ItemNumber)');
+      SQL.Add('insert into tb900_numberstabel values (:itemType, :currentYear, :currentMonth, :ItemNumber)');
       Parameters.ParamByName('itemType').Value := itemName;
+      Parameters.ParamByName('currentYear').Value := wYear;
+      Parameters.ParamByName('currentMonth').Value := wMonth;
       Parameters.ParamByName('itemNumber').Value := hulp ;
       execSQL;
     end;
