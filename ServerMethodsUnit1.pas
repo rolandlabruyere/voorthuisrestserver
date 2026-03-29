@@ -37,8 +37,8 @@ begin
   storeSessionSettings(passThruItem[1]);
 
   menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
-                'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings', 'settings', 'powerTrafoSpecs', 'prepareSales', 'clear'];
-  //writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
+                'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings', 'settings', 'powerTrafoSpecs', 'prepareSales', 'printTurnSchematic', 'clear'];
+  writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
 //    11  : Result := createJsonPayment(25.00, 'VT202503120001');
 //    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
@@ -59,7 +59,8 @@ begin
     12  : Result := getScreen('settings');
     13  : Result := getScreen('powerTrafoSpecs');
     14  : Result := prepareTrafoSales(passThruItem[1], passThruItem[3]);
-    15  : Result := '';
+    15  : Result := printTurnSchematic(passThruItem[1], passThruItem[3]);
+    16  : Result := '';
 //    16  : Result := getScreen('indexPageDinerCandle');
 //    17  : Result := getScreen('cartFlexBox');
 //    18  : Result := '';

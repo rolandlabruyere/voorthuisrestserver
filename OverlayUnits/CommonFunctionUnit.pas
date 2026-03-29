@@ -3,25 +3,27 @@ unit CommonFunctionUnit;
 interface
   uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, System.StrUtils, System.math;
 
-  function storeSessionSettings(myIp: string): string;
-  function updateSessionSettings(myIp: string): string;
-  function generateSessionId(): string;
-  function generateTimestamp(offset: integer = 0): string;
-  function generateTimestampMonthOld: string;
+  function storeSessionSettings(myIp: String): String;
+  function updateSessionSettings(myIp: String): String;
+  function generateSessionId(): String;
+  function generateTimestamp(offset: integer = 0): String;
+  function generateTimestampMonthOld: String;
   function binPower(value, exponent: integer): integer;
-  function fillLeft(myNumber, size: integer): string;
-  function Left(myString: string; getPart: integer): string;
-  function Right(myString: string; getPart: integer): string;
-  function getCurrentNumber(itemName: string): string;
-  function CountOccurences( const SubText: string; const Text: string): Integer;
+  function fillLeft(myNumber, size: integer): String;
+  function Left(myString: String; getPart: integer): String;
+  function Right(myString: String; getPart: integer): String;
+  function getCurrentNumber(itemName: String): String;
+  function CountOccurences( const SubText: String; const Text: String): Integer;
   function readEntireFile(fileName: String): String;
-  function getTrafoBinValue(myIp: string): integer;
-  function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: string): string;
-  function getSumVaSecundary(myIp, trafoNum: string): single;
+  function writeEntireFile(fileName, textToWrite: String): String;
+  function getTrafoBinValue(myIp: String): integer;
+  function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: String): String;
+  function getSumVaSecundary(myIp, trafoNum: String): single;
   function getWireSize(secAmps: single; isMilliAmps: boolean): single; overload;
   function getWireSize(primVa, primVoltage: single): single; overload;
   function calcTurnArea(d, N: single): single;
-  function getSuitableEiType(calculatedWindowsArea: single): string;
+  function getSuitableEiType(calculatedWindowsArea: single): String;
+  function getCsvHeader(documentName: String): String;
 
 implementation
 uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
@@ -33,7 +35,24 @@ begin
   result := ((N * sqr(d)) / Fv)/100
 end;
 
-function getSuitableEiType(calculatedWindowsArea: single): string;
+function getCsvHeader(documentName: String): String;
+var
+  thisQuery: tAdoQuery;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+
+  with thisQuery do begin
+    connection := Form1.adoConnHtmlPages;
+
+    SQL.add('select header from tb800_csv_headers where docName >= :docName');
+    Parameters.ParamByName('docName').Value := documentName;
+    Open;
+    Result := fields[0].AsString;
+  end;
+end;
+
+
+function getSuitableEiType(calculatedWindowsArea: single): String;
 var
   thisQuery: tAdoQuery;
 begin
@@ -51,7 +70,7 @@ begin
 end;
 
 
-function getSumVaSecundary(myIp, trafoNum: string): single;
+function getSumVaSecundary(myIp, trafoNum: String): single;
   var
     customerQuery: tAdoQuery;
     primaryVA: single;
@@ -76,7 +95,7 @@ function getSumVaSecundary(myIp, trafoNum: string): single;
     end;
   end;
 
-function getTrafoBinValue(myIp: string): integer;
+function getTrafoBinValue(myIp: String): integer;
   var
     customerQuery: tAdoQuery;
   begin
@@ -91,10 +110,10 @@ function getTrafoBinValue(myIp: string): integer;
     end;
   end;
 
-function storeSessionSettings(myIp: string): string;
+function storeSessionSettings(myIp: String): String;
     var
     thisQuery: tAdoQuery;
-    newTimeStamp: string;
+    newTimeStamp: String;
   begin
     thisQuery := tAdoQuery.Create(nil);
     thisQuery.Connection := form1.adoVoorThuisCustomerSales;
@@ -117,7 +136,7 @@ function storeSessionSettings(myIp: string): string;
     end;
   end;
 
-function updateSessionSettings(myIp: string): string;
+function updateSessionSettings(myIp: String): String;
     var
     thisQuery: tAdoQuery;
   begin
@@ -133,10 +152,10 @@ function updateSessionSettings(myIp: string): string;
     end;
   end;
 
-  function generateSessionId: string;
+  function generateSessionId: String;
   var
     t: integer;
-    hex: string;
+    hex: String;
   begin
     Randomize;
     for t  := 1 to 20 do
@@ -144,17 +163,17 @@ function updateSessionSettings(myIp: string): string;
     result := hex;
   end;
 
-  function generateTimestamp(offset: integer = 0): string;
+  function generateTimestamp(offset: integer = 0): String;
   var
-    thisDate: string;
+    thisDate: String;
   begin
     thisDate := FormatDateTime('yyyy/mm/dd hh:mm:ss:zzz', Now() - EncodeTime(0, offset, 0, 0));
     result := thisDate;
   end;
 
-  function generateTimestampMonthOld: string;
+  function generateTimestampMonthOld: String;
   var
-    thisDate: string;
+    thisDate: String;
   begin
     thisDate := FormatDateTime('yyyy/mm/dd hh:mm:ss:zzz', Now() - 30);
     result := thisDate;
@@ -178,7 +197,7 @@ function updateSessionSettings(myIp: string): string;
     result := hulp;
   end;
 
-function getCurrentNumber(itemName: string): string;
+function getCurrentNumber(itemName: String): String;
   var
     htmlQuery: tAdoQuery;
     hulp: integer;
@@ -217,10 +236,10 @@ begin
     result := intToStr(wYear) + fillLeft(wMonth, 2) + result;
   end;
 
-function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: string): string;
+function fetchAddressByZipcode(zipCode, houseNumber, houseNumTvo: String): String;
   var
     htmlQuery: tAdoQuery;
-    hulp: string;
+    hulp: String;
 begin
     htmlQuery := tAdoQuery.Create(nil);
     htmlQuery.Connection := form1.adoConnHtmlPages;
@@ -237,26 +256,26 @@ begin
     end;
   end;
 
-  function fillLeft(myNumber, size: integer): string;
+  function fillLeft(myNumber, size: integer): String;
   var
-    hulp: string;
+    hulp: String;
   begin
     hulp := intToStr(myNumber);
     result := StringOfChar('0', size - length(hulp)) + hulp;
   end;
 
-  function Left(myString: string; getPart: integer): string;
+  function Left(myString: String; getPart: integer): String;
   begin
     result := copy(myString, 0, getPart);
   end;
 
-  function Right(myString: string; getPart: integer): string;
+  function Right(myString: String; getPart: integer): String;
   begin
     result := copy(myString, length(myString) - (getpart - 1), getPart);
   end;
 
   { Returns a count of the number of occurences of SubText in Text }
-  function CountOccurences( const SubText: string; const Text: string): Integer;
+  function CountOccurences( const SubText: String; const Text: String): Integer;
   begin
     if (SubText = '') OR (Text = '') OR (Pos(SubText, Text) = 0) then
       Result := 0
@@ -269,6 +288,18 @@ begin
     readFile: TFile;
   begin
     result := readfile.ReadAllText(FileName);
+  end;
+
+  function writeEntireFile(fileName, textToWrite: String): String;
+  var
+    writeFile: TFile;
+  begin
+    try
+      writefile.WriteAllText(FileName, textToWrite);
+      result := 'Ok'
+    except
+      on E:exception do writelog(E.Message);
+    end;
   end;
 
   function getWireSize(primVa, primVoltage: single): single; overload;

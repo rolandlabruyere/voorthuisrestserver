@@ -4,53 +4,61 @@ interface
   uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, System.StrUtils, system.math,
        CommonProcedureUnit, CommonFunctionUnit, PrinterServerUnit;
 
-  function getScreen(htmlItem: string): string;
-  function getPlaceholders(htmlItem: string): string;
-  function getDetailScreen(htmlItem: string): string;
-  function constructPowerTrafoScreen(myIp, value: String): string;
-  function checkForUnfinishedTrafo(myIp : String): string;
-  function initNewPowerTrafo(myIp : String): string;
-  function calculatePowerTrafo(myIp, fixValue: String): string;
-  function storeTempTrafoSettings(myIp, myTrafoType, Part, pickedValues: String): string;
-  function getObjectPrice(objectDescription: string): string;
-  function getObjectInCart(objectArray, SessionId: string): string;
-  function listGroupedCartItems(sessionId: string): string;
-  function checkCart(sessionId: string): string;
-  function listGroupedInvoiceItems(sessionId: string): string;
+  function getScreen(htmlItem: String): String;
+  function getPlaceholders(htmlItem: String): String;
+  function getDetailScreen(htmlItem: String): String;
+  function constructPowerTrafoScreen(myIp, value: String): String;
+  function checkForUnfinishedTrafo(myIp : String): String;
+  function initNewPowerTrafo(myIp : String): String;
+  function calculatePowerTrafo(myIp, fixValue: String): String;
+  function storeTempTrafoSettings(myIp, myTrafoType, Part, pickedValues: String): String;
+  function getObjectPrice(objectDescription: String): String;
+  function getObjectInCart(objectArray, SessionId: String): String;
+  function listGroupedCartItems(sessionId: String): String;
+  function checkCart(sessionId: String): String;
+  function listGroupedInvoiceItems(sessionId: String): String;
   function binPower(base, exponent: integer): integer;
-  function saveSitePrefs(myIp, checkedOptions: string): string;
-  function saveGridSettings(myIp, Voltage, Frequency: string): string;
-  function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: string): string;
-  function saveSettings(myIp, fixValue: string): string;
-  function checkSettings(myIp: string): string;
-  function showStoredSettings(myIp: string; thisQuery: tAdoQuery): string;
-  function checkUnfinishedTrafo(myIp: string): string;
-  function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: string; allSpecs: array of string): boolean;
-  function prepareTrafoSales(myIp, trafoNumber: string): string;
+  function saveSitePrefs(myIp, checkedOptions: String): String;
+  function saveGridSettings(myIp, Voltage, Frequency: String): String;
+  function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: String): String;
+  function saveSettings(myIp, fixValue: String): String;
+  function checkSettings(myIp: String): String;
+  function showStoredSettings(myIp: String; thisQuery: tAdoQuery): String;
+  function checkUnfinishedTrafo(myIp: String): String;
+  function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: String; allSpecs: array of String): boolean;
+  function prepareTrafoSales(myIp, trafoNumber: String): String;
+  function printTurnSchematic(myIp, trafoNumber: String): String;
 
 implementation
 
-function prepareTrafoSales(myIp, trafoNumber: string): string;
+function printTurnSchematic(myIp, trafoNumber: String): String;
 var
-  //htmlQuery: tAdoQuery;
-
-  returnHTML, placeHolderAll: string;
-  placeHolders: TArray<String>;
-
+  returnHTML, thisHeader: String;
+const
+  download = '\templates\download\';
+  vbCrLf = #13 + #10;
 begin
-  //htmlQuery := tAdoQuery.Create(nil);
-  //htmlQuery.Connection := form1.adoConnHtmlPages;
+  thisHeader := getCsvHeader('wikkelschema') + vbCrLf + 'dit is een test';
+  writeEntireFile(getCurrentDir + download + myIp.Replace('.', '_') + '_' + trafoNumber + '.csv', thisHeader);
+  result := myIp + '-' + trafoNumber;
+end;
+
+
+function prepareTrafoSales(myIp, trafoNumber: String): String;
+var
+  returnHTML, placeHolderAll: String;
+  placeHolders: TArray<String>;
+begin
   returnHTML := getScreen('finalizeTrafoVmenu');
   placeHolderAll := getPlaceHolders('finalizeTrafo');
   placeHolders := placeHolderAll.Split(['|']);
   returnHTML := returnHTML.Replace(placeHolders[0], trafoNumber);
 
-  OpenWordDocument(getcurrentdir + '\templates\doc\wikkelschema.docx');
   closeTrafoConfig(myIp, trafoNumber);
   result := returnHTML;
 end;
 
-function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: string; allSpecs: array of string): boolean;
+function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: String; allSpecs: array of String): boolean;
 var
   customerQuery: tAdoQuery;
 begin
@@ -66,9 +74,7 @@ begin
     try
       execSql;
     except
-      on E:exception do begin
-        writelog(E.Message);
-      end;
+      on E:exception do writelog(E.Message);
     end;
 
     clear;
@@ -119,10 +125,10 @@ begin
   end;
 end;
 
-function calculatePowerTrafo(myIp, fixValue: String): string;
+function calculatePowerTrafo(myIp, fixValue: String): String;
   var
     htmlQuery, customerQuery: tAdoQuery;
-    trafoNum, exportHtml, placeHoldersAll, placeBoolsAll: string;
+    trafoNum, exportHtml, placeHoldersAll, placeBoolsAll: String;
     placeHolders, placeBools: TArray<String>;
     T, secCenterTap, tapFiftyVolt, filCenterTap: integer;
 
@@ -134,7 +140,7 @@ function calculatePowerTrafo(myIp, fixValue: String): string;
     filTwelveWireSize, primTurnArea, secTurnArea, fiveVoltTurnArea,
     sixVoltTurnArea, twelveVoltTurnArea, filFiveCTturns, filSixCTturns,
     filTwelveCTturns: single;
-    itemValues: array[0..26] of string;
+    itemValues: array[0..26] of String;
   const
     htmlItem = 'calculatedTrafoSpecs';
 begin
@@ -270,7 +276,7 @@ begin
   end;
 end;
 
-function checkUnfinishedTrafo(myIp: string): string;
+function checkUnfinishedTrafo(myIp: String): String;
 var
   customerQuery: tAdoQuery;
 begin
@@ -289,7 +295,7 @@ begin
   end;
 end;
 
-function checkSettings(myIp: string): string;
+function checkSettings(myIp: String): String;
 var
   customerQuery: tAdoQuery;
 begin
@@ -308,15 +314,15 @@ begin
   end;
 end;
 
-function showStoredSettings(myIp: string; thisQuery: tAdoQuery): string;
+function showStoredSettings(myIp: String; thisQuery: tAdoQuery): String;
 var
-  settingsHtml, stringPlaceHolders: string;
+  settingsHtml, StringPlaceHolders: String;
   placeHolders: TArray<String>;
   T: integer;
 begin
   settingsHtml := getScreen('storedSettings');
-  stringPlaceHolders := getPlaceholders('storedSettings');
-  placeHolders := stringPlaceHolders.Split(['|']);
+  StringPlaceHolders := getPlaceholders('storedSettings');
+  placeHolders := StringPlaceHolders.Split(['|']);
   for T := 0 to length(placeHolders) do begin
     if thisQuery.Fields[T + 1].asString = '1' then
       settingsHtml := settingsHtml.Replace(placeHolders[T], 'checked')
@@ -328,12 +334,12 @@ begin
   writelog(result);
 end;
 
-function saveSettings(myIp, fixValue: string): string;
+function saveSettings(myIp, fixValue: String): String;
 var
   fixElements: TArray<String>;
   elementParts: TArray<String>;
   T: integer;
-  gridVoltage, gridFreq, zipcode, hsNumber, hsNumberTvo, saveSettings: string;
+  gridVoltage, gridFreq, zipcode, hsNumber, hsNumberTvo, saveSettings: String;
 begin
   fixElements :=  fixValue.Split(['-']);
 
@@ -362,7 +368,7 @@ begin
   result := checkSettings(myIp);
 end;
 
-function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: string): string;
+function getAddress(myIp, zipcode, houseNumber, houseNumberAdd: String): String;
 var
   customerQuery: tAdoQuery;
 begin
@@ -395,7 +401,7 @@ begin
   end;
 end;
 
-function saveGridSettings(myIp, Voltage, Frequency: string): string;
+function saveGridSettings(myIp, Voltage, Frequency: String): String;
 var
   customerQuery: tAdoQuery;
 begin
@@ -427,7 +433,7 @@ begin
   end;
 end;
 
-function saveSitePrefs(myIp, checkedOptions: string): string;
+function saveSitePrefs(myIp, checkedOptions: String): String;
 var
   customerQuery: tAdoQuery;
   options: array[1..4] of boolean;
@@ -473,7 +479,7 @@ begin
   end;
 end;
 
-function getScreen(htmlItem: string): string;
+function getScreen(htmlItem: String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -488,7 +494,7 @@ begin
   end;
 end;
 
-function getPlaceholders(htmlItem: string): string;
+function getPlaceholders(htmlItem: String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -504,7 +510,7 @@ begin
 end;
 
 
-function storeTempTrafoSettings(myIp, myTrafoType, Part, pickedValues: String): string;
+function storeTempTrafoSettings(myIp, myTrafoType, Part, pickedValues: String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -536,7 +542,7 @@ begin
   end;
 end;
 
-function checkForUnfinishedTrafo(myIp : String): string;
+function checkForUnfinishedTrafo(myIp : String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -560,10 +566,10 @@ begin
   end;
 end;
 
-function initNewPowerTrafo(myIp : String): string;
+function initNewPowerTrafo(myIp : String): String;
   var
   thisQuery: tAdoQuery;
-  currentTrafoNum: string;
+  currentTrafoNum: String;
 begin
   thisQuery := tAdoQuery.Create(nil);
   thisQuery.Connection := form1.adoVoorThuisCustomerSales;
@@ -617,11 +623,11 @@ begin
 end;
 
 
-function constructPowerTrafoScreen(myIp, value: String): string;
+function constructPowerTrafoScreen(myIp, value: String): String;
   var
   thisQuery: tAdoQuery;
   T, tempValue: integer;
-  mainHtml, trafoId: string;
+  mainHtml, trafoId: String;
 begin
   thisQuery := tAdoQuery.Create(nil);
   thisQuery.Connection := form1.adoConnHtmlPages;
@@ -665,7 +671,7 @@ begin
 end;
 
 
-function getDetailScreen(htmlItem: string): string;
+function getDetailScreen(htmlItem: String): String;
   var
   thisQuery: tAdoQuery;
   inlineHTML, textPlaceHolder, pricePlaceHolder, bigImagePH, thumbNailPH: String;
@@ -718,7 +724,7 @@ begin
   result := inlineHtml;
 end;
 
-function getObjectPrice(objectDescription: string): string;
+function getObjectPrice(objectDescription: String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -734,7 +740,7 @@ begin
   end;
 end;
 
-function checkCart(sessionId: string): string;
+function checkCart(sessionId: String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -750,11 +756,11 @@ begin
   end;
 end;
 
-function listGroupedCartItems(sessionId: string): string;
+function listGroupedCartItems(sessionId: String): String;
   var
   salesQuery, htmlQuery: tAdoQuery;
-  outterHtml, inlineHtml, cartFlexBox, cartFlexBoxContainer, cartLines, hulp1String, hulp2String: string;
-  placeHolder: array[0..7] of string;
+  outterHtml, inlineHtml, cartFlexBox, cartFlexBoxContainer, cartLines, hulp1String, hulp2String: String;
+  placeHolder: array[0..7] of String;
 begin
   salesQuery := tAdoQuery.Create(nil);
   htmlQuery := tAdoQuery.Create(nil);
@@ -823,11 +829,11 @@ begin
   writelog(result);
 end;
 
-function listGroupedInvoiceItems(sessionId: string): string;
+function listGroupedInvoiceItems(sessionId: String): String;
   var
   salesQuery, htmlQuery: tAdoQuery;
-  inlineHtml, cartFlexBox, cartFlexBoxContainer, cartLines, hulp1String, hulp2String, totalLine: string;
-  placeHolder: array[0..8] of string;
+  inlineHtml, cartFlexBox, cartFlexBoxContainer, cartLines, hulp1String, hulp2String, totalLine: String;
+  placeHolder: array[0..8] of String;
   T: integer;
 begin
   salesQuery := tAdoQuery.Create(nil);
@@ -911,11 +917,11 @@ begin
 end;
 
 
-function getObjectInCart(objectArray, SessionId: string): string;
+function getObjectInCart(objectArray, SessionId: String): String;
   var
   thisQuery: tAdoQuery;
   objectList: TStringList;
-  myDescription, itemName, IndexNr: string;
+  myDescription, itemName, IndexNr: String;
   numberOfItems, Price: single;
   lastOrderNum: integer;
 begin

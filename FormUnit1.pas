@@ -59,7 +59,7 @@ end;
 
 procedure TForm1.ButtonOpenBrowserClick(Sender: TObject);
 var
-  LURL: string;
+  LURL: String;
 begin
   StartServer;
   LURL := Format('http://localhost:%s', [EditPort.Text]);

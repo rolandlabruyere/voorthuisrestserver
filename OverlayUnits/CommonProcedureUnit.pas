@@ -3,23 +3,23 @@ unit CommonProcedureUnit;
 interface
   uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, System.StrUtils, System.math, Winapi.Messages,  Winapi.ShellApi;
 
-  procedure writeLog(writeItem: string);
+  procedure writeLog(writeItem: String);
   procedure resetSession();
-  procedure createShoppingCart(sessionId: string);
+  procedure createShoppingCart(sessionId: String);
   procedure removeEmptyCarts();
-  procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
+  procedure Split(Delimiter: Char; Str: String; ListOfStrings: TStrings) ;
   procedure writeToFile(fileName,fileContent: String);
-  procedure runCmd(const ExecutableName, Parameters: string);
-  procedure getGridValues(myIp: string; var gridVoltage, gridFrequency: single);
-  procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: string);
-  procedure closeTrafoConfig(myIp, trafoNum: string);
+  procedure runCmd(const ExecutableName, Parameters: String);
+  procedure getGridValues(myIp: String; var gridVoltage, gridFrequency: single);
+  procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: String);
+  procedure closeTrafoConfig(myIp, trafoNum: String);
 
 implementation
   uses FormUnit1, dialogs, CommonFunctionUnit, FindFiles;
   var
     primVA: single;
 
-  procedure closeTrafoConfig(myIp, trafoNum: string);
+  procedure closeTrafoConfig(myIp, trafoNum: String);
     var
       thisQuery: tAdoQuery;
     begin
@@ -34,7 +34,7 @@ implementation
         execSql;
       end;
   end;
-  procedure getGridValues(myIp: string; var gridVoltage, gridFrequency: single);
+  procedure getGridValues(myIp: String; var gridVoltage, gridFrequency: single);
   var
     thisQuery: tAdoQuery;
   begin
@@ -57,7 +57,7 @@ implementation
   end;
   end;
 
-  procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: string);
+  procedure powerTrafoSaveFinalizeSpecs(myIp, fixValue: String);
   var
   htmlQuery, customerQuery: tAdoQuery;
   T, binValue, tempInt: integer;
@@ -65,7 +65,7 @@ implementation
   content: TArray<String>;
   boolValue: TStrArray;
   intValue: TIntArray;
-  hulp: string;
+  hulp: String;
 
   begin
     htmlQuery := tAdoQuery.Create(nil);
@@ -122,7 +122,7 @@ implementation
     end;
   end;
 
-  procedure writeLog(writeItem: string);
+  procedure writeLog(writeItem: String);
   var
     F: TextFile;
   begin
@@ -166,7 +166,7 @@ implementation
     end;
   end;
 
-  procedure createShoppingCart(sessionId: string);
+  procedure createShoppingCart(sessionId: String);
   var
     thisQuery: tAdoQuery;
   begin
@@ -186,7 +186,7 @@ implementation
     end;
   end;
 
-  procedure Split(Delimiter: Char; Str: string; ListOfStrings: TStrings) ;
+  procedure Split(Delimiter: Char; Str: String; ListOfStrings: TStrings) ;
   begin
      ListOfStrings.Clear;
      ListOfStrings.Delimiter       := Delimiter;
@@ -204,7 +204,7 @@ implementation
     closeFile(outputFile);
   end;
 
-  procedure runCmd(const ExecutableName, Parameters: string);
+  procedure runCmd(const ExecutableName, Parameters: String);
   begin
     ShellExecute(0, 'open', PChar(ExecutableName), Pointer(Parameters), nil, 0);
   end;
