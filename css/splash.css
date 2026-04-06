@@ -190,5 +190,10 @@ button{
   padding: 5px;
   cursor: pointer;
 }
-.menuRows {
+.dwnldButton {
+	padding: 10px 10px; 
+	background-color: #007BFF; 
+	color: white; 
+	text-decoration: none; 
+	border-radius: 5px;
 }

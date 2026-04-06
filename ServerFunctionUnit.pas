@@ -33,14 +33,24 @@ implementation
 
 function printTurnSchematic(myIp, trafoNumber: String): String;
 var
-  returnHTML, thisHeader: String;
+  returnHTML, myHeader, myData, sourceFile, curMap: String;
+
 const
-  download = '\templates\download\';
+  dwnldMap = '\templates\download\';
+  dataMap = '\templates\data\';
+  templatesMap = '\templates\doc\';
   vbCrLf = #13 + #10;
+  mailmergeLetter = 'wikkelschema.docx';
 begin
-  thisHeader := getCsvHeader('wikkelschema') + vbCrLf + 'dit is een test';
-  writeEntireFile(getCurrentDir + download + myIp.Replace('.', '_') + '_' + trafoNumber + '.csv', thisHeader);
-  result := myIp + '-' + trafoNumber;
+  curMap := getCurrentDir;
+  sourceFile := myIp.Replace('.', '_') + '_' + trafoNumber + '.csv';
+  myHeader := getCsvHeader('wikkelschema') + vbCrLf ;
+  myData := fetchTrafoData(myIp, trafoNumber, myHeader);
+  writeEntireFile(curMap + dataMap + sourceFile, myHeader + myData);
+  returnHTML := getScreen('downloads');
+  returnHTML := returnHTML.Replace(getPlaceholders('downloads'), PerformMailMerge(myIp, trafoNumber, mailmergeLetter, sourceFile));
+
+  result := returnHTML;
 end;
 
 

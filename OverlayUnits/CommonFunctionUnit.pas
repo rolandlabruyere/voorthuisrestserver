@@ -24,15 +24,34 @@ interface
   function calcTurnArea(d, N: single): single;
   function getSuitableEiType(calculatedWindowsArea: single): String;
   function getCsvHeader(documentName: String): String;
+  function fetchTrafoData(myIp, trafoNumber, csvHeader: String): String;
 
 implementation
 uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
 
-function calcTurnArea(d, N: single): single;
-const
-  Fv = 0.25 ;
+function fetchTrafoData(myIp, trafoNumber, csvHeader: String): String;
+var
+  thisQuery: tAdoQuery;
+  headerFields: TArray<String>;
+  T: integer;
+  hulp: String;
 begin
-  result := ((N * sqr(d)) / Fv)/100
+  thisQuery := tAdoQuery.Create(nil);
+  headerFields := csvHeader.Split([';']);
+  hulp := '';
+
+  with thisQuery do begin
+    connection := Form1.adoConnHtmlPages;
+
+    SQL.add('select * from vw810_full_csv_layout_turn_schem where ip = :myIp and orderNum = :trafoNum');
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('trafoNum').Value := trafoNumber;
+    open;
+    for T := 0 to length(headerFields) - 1 do hulp := hulp + fields[T + 1].AsString.replace('.', ',') + ';';
+  end;
+
+  hulp := left(hulp, length(hulp) - 1);
+  result := hulp;
 end;
 
 function getCsvHeader(documentName: String): String;
@@ -51,6 +70,12 @@ begin
   end;
 end;
 
+function calcTurnArea(d, N: single): single;
+const
+  Fv = 0.25 ;
+begin
+  result := ((N * sqr(d)) / Fv)/100
+end;
 
 function getSuitableEiType(calculatedWindowsArea: single): String;
 var
@@ -202,7 +227,6 @@ function getCurrentNumber(itemName: String): String;
     htmlQuery: tAdoQuery;
     hulp: integer;
     wYear, wMonth, wDay: Word;
-    CMonth: Word;
 begin
     DecodeDate(Date, wYear, wMonth, wDay);
 
@@ -283,13 +307,13 @@ begin
       Result := (Length(Text) - Length(StringReplace(Text, SubText, '', [rfReplaceAll]))) div  Length(subtext);
   end;
 
+  {$HINTS OFF}
   function readEntireFile(fileName: String): String;
   var
     readFile: TFile;
   begin
     result := readfile.ReadAllText(FileName);
   end;
-
   function writeEntireFile(fileName, textToWrite: String): String;
   var
     writeFile: TFile;
@@ -301,6 +325,7 @@ begin
       on E:exception do writelog(E.Message);
     end;
   end;
+  {$HINTS ON}
 
   function getWireSize(primVa, primVoltage: single): single; overload;
   var

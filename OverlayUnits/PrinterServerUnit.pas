@@ -1,52 +1,61 @@
 unit PrinterServerUnit;
 
-interface
-uses System.SysUtils, System.Classes, System.StrUtils, system.math, Word2000, Variants, CommonProcedureUnit;
+interface uses System.SysUtils, System.Classes, System.StrUtils, system.math, Variants, CommonProcedureUnit, ComObj, idHTTP;
 
-procedure OpenWordDocument(filename: String);
+  function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
+  function uploadFile(myIp: string): string;
 
 implementation
+  const
+    dwnldMap = '\templates\download\';
+    dataMap = '\templates\data\';
+    templatesMap = '\templates\doc\';
+    wdExportFormatPDF = 17;
 
-  procedure OpenWordDocument(filename: String);
-  Var
-    wordServer : TWordApplication;
-    EmptyParam : OleVariant;
-  begin
-    wordServer := TWordApplication.Create(nil);
-    EmptyParam := Variants.EmptyParam;
+  function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
+    var
+      WordApp, WordDoc: Variant;
+      curFolder, newFileName: String;
+    begin
+      curFolder := getCurrentDir;
+      newFileName := curFolder + dwnldMap + trafoNumber + '.pdf';
+      filename := curFolder + templatesMap + filename;
+      dataSource := curFolder + dataMap + dataSource;
 
-    with wordServer do begin
-      try
-        Visible := false;
-        Connect;
-        Documents.Open(filename, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam);
-      except
-        on E: exception do writelog(E.Message);
-      end;
-      Quit(wdDoNotSaveChanges, EmptyParam, EmptyParam);
+    try
+      WordApp := CreateOleObject('Word.Application');
+      WordApp.Visible := false;
+
+      WordDoc := WordApp.Documents.Open(filename);
+      WordDoc.MailMerge.OpenDataSource(dataSource);
+      WordDoc.MailMerge.Execute(False);
+      WordApp.ActiveDocument.SaveAs2(newFileName, 17);
+    finally
+      WordDoc.Close(False);
+      WordApp.Quit;
     end;
+   // uploadFile(newFileName);
+    result := newFileName;
   end;
 
-  {
-wordApp: TWordApplication;
-FileFormat: OleVariant;
+function uploadFile(myIp: string): string;
+var
+  IdHTTP1: TIdHTTP;
+  Stream: TMemoryStream;
+  Url, FileName: String;
 begin
-try
-wordApp := TWordApplication.Create(nil);
-wordApp.Connect;
-wordApp.Visible := false;
-wordApp.Documents.Open(FileName, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam);
-wordApp.ActiveDocument.MailMerge.MainDocumentType := wdFormLetters;
-wordApp.ActiveDocument.MailMerge.OpenDataSource('D ata.htm', EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam);
-wordApp.ActiveDocument.MailMerge.Destination := wdSendToNewDocument;
-wordApp.ActiveDocument.MailMerge.SuppressBlankLine s := true;
-wordApp.ActiveDocument.MailMerge.Execute(false);
-wordApp.Quit(wdDoNotSaveChanges, EmptyParam, EmptyParam);
-wordApp.ActiveDocument.SaveAs(pad, FileFormat, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam, EmptyParam);
-EmptyParam, EmptyParam, EmptyParam);
-finally
-wordApp.Free();
+  Url := 'http://' + myIp + '/';
+  Filename := '';
+
+  IdHTTP1 := TIdHTTP.Create(nil);
+  Stream := TMemoryStream.Create;
+  try
+    IdHTTP1.put(Url, Stream);
+    IdHTTP1.Post(Url, Stream);
+    Stream.SaveToFile(FileName);
+  finally
+    Stream.Free;
+    IdHTTP1.Free;
+  end;
 end;
-end;
-  }
 end.

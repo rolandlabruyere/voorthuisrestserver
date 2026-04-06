@@ -41,6 +41,8 @@ const
   filamentFiveVolts = 5;
   filamentSixVolts = 6.3;
   filamentTwelveVolts = 12.6;
+  htmlPagesConnStrng = 'Driver=MySQL ODBC 5.3 Unicode Driver;Server=Localhost;Port=3306;Database=VoorThuisHtmlPages;Uid=root;Pwd=w2YNcM01||P3n1sl@nD01';
+  custSalesConnStrng = 'Driver=MySQL ODBC 5.3 Unicode Driver;Server=Localhost;Port=3306;Database=VoorThuisCustomerSales;Uid=root;Pwd=w2YNcM01||P3n1sl@nD01';
 
 
 implementation
@@ -89,11 +91,11 @@ end;
 procedure TForm1.FormActivate(Sender: TObject);
 begin
   with adoConnHtmlPages do begin
-    ConnectionString := 'Driver=MySQL ODBC 5.3 Unicode Driver;Server=Localhost;Port=3306;Database=VoorThuisHtmlPages;Uid=root;Pwd=w2YNcM01||P3n1sl@nD01';
+    ConnectionString := htmlPagesConnStrng;
     Connected := true;
   end;
   with adoVoorThuisCustomerSales do begin
-    ConnectionString := 'Driver=MySQL ODBC 5.3 Unicode Driver;Server=Localhost;Port=3306;Database=VoorThuisCustomerSales;Uid=root;Pwd=w2YNcM01||P3n1sl@nD01';
+    ConnectionString := custSalesConnStrng;
     Connected := true;
   end;
 

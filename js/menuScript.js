@@ -122,6 +122,7 @@ const Menu = ({ items }) => {
       onClick: () => {
 			getPage(item.name, "contentDiv", objectBin);
 			getPage("clear", "vertMenuDiv","");
+			getPage("clear", "infoDiv","");
 			objectBin = 1;
 			savedValues = "";
 		 },
