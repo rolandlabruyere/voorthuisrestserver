@@ -18,7 +18,8 @@ uses
   RestUnit in 'OverlayUnits\RestUnit.pas',
   FindFiles in 'OverlayUnits\FindFiles.pas',
   PrinterServerUnit in 'OverlayUnits\PrinterServerUnit.pas',
-  dataBaseUnit in 'OverlayUnits\dataBaseUnit.pas';
+  dataBaseUnit in 'OverlayUnits\dataBaseUnit.pas',
+  MailServerUnit in 'OverlayUnits\MailServerUnit.pas';
 
 {$R *.res}
 

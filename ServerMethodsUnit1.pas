@@ -3,7 +3,8 @@ unit ServerMethodsUnit1;
 interface
 
 uses System.SysUtils, System.Classes, Datasnap.DSServer, Datasnap.DSAuth, Dialogs, System.StrUtils,
-     ServerFunctionUnit, CommonFunctionUnit, CommonProcedureUnit, RestUnit, REST.Types;
+     ServerFunctionUnit, CommonFunctionUnit, CommonProcedureUnit, RestUnit, REST.Types, dataBaseUnit,
+     PrinterServerUnit;
 
 
 type
@@ -62,7 +63,7 @@ begin
     14  : Result := prepareTrafoSales(passThruItem[1], passThruItem[3]);
     15  : Result := printTurnSchematic(passThruItem[1], passThruItem[3]);
     16  : Result := '';
-    17  : Result := getScreen('cartFlexBox');
+    17  : Result := uploadFile(passThruItem[1], passThruItem[3]);
 //    18  : Result := '';
 //    19  : Result := '';
 //    20  : Result := '';

@@ -1,9 +1,10 @@
 unit PrinterServerUnit;
 
-interface uses System.SysUtils, System.Classes, System.StrUtils, system.math, Variants, CommonProcedureUnit, ComObj, idHTTP;
+interface uses System.SysUtils, System.Classes, System.StrUtils, system.math, Variants, CommonProcedureUnit, ComObj,
+               idHTTP, dataBaseUnit, MailServerUnit;
 
   function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
-  function uploadFile(myIp: string): string;
+  function uploadFile(myIp, trafoNumber: string): string;
 
 implementation
   const
@@ -34,28 +35,32 @@ implementation
       WordDoc.Close(False);
       WordApp.Quit;
     end;
-   // uploadFile(newFileName);
+    saveDocument(myIp, trafoNumber, newFileName);
     result := newFileName;
   end;
 
-function uploadFile(myIp: string): string;
+function uploadFile(myIp, trafoNumber: string): string;
 var
   IdHTTP1: TIdHTTP;
   Stream: TMemoryStream;
   Url, FileName: String;
 begin
-  Url := 'http://' + myIp + '/';
-  Filename := '';
-
-  IdHTTP1 := TIdHTTP.Create(nil);
-  Stream := TMemoryStream.Create;
-  try
-    IdHTTP1.put(Url, Stream);
-    IdHTTP1.Post(Url, Stream);
-    Stream.SaveToFile(FileName);
-  finally
-    Stream.Free;
-    IdHTTP1.Free;
-  end;
+//  Url := 'http://' + myIp + '/';
+  filename := getFilename(myIp, trafoNumber);
+  sendMail(filename);
+//  Url := 'http://localhost:8080/';
+//
+//  IdHTTP1 := TIdHTTP.Create(nil);
+//  Stream := TMemoryStream.Create;
+//  try
+////    IdHTTP1.put(Url, Stream);
+//    Stream.LoadFromFile(FileName);
+//    IdHTTP1.get(Url, Stream);
+//  except
+//      on E:exception do writelog(E.Message);
+//  end;
+//  Stream.Free;
+//  IdHTTP1.Free;
+  result := Filename;
 end;
 end.

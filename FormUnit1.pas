@@ -6,7 +6,7 @@ uses
   Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.AppEvnts, Vcl.StdCtrls, IdHTTPWebBrokerBridge, Web.HTTPApp, Data.DB,
-  Data.Win.ADODB, Vcl.ExtCtrls;
+  Data.Win.ADODB;
 
 type
   TIntArray = array of integer;
@@ -98,7 +98,6 @@ begin
     ConnectionString := custSalesConnStrng;
     Connected := true;
   end;
-
 //  resetSession;
 //  removeEmptyCarts;
 end;
