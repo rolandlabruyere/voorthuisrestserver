@@ -30,7 +30,7 @@ implementation
       WordDoc := WordApp.Documents.Open(filename);
       WordDoc.MailMerge.OpenDataSource(dataSource);
       WordDoc.MailMerge.Execute(False);
-      WordApp.ActiveDocument.SaveAs2(newFileName, 17);
+      WordApp.ActiveDocument.SaveAs2(newFileName, wdExportFormatPDF);
     finally
       WordDoc.Close(False);
       WordApp.Quit;
