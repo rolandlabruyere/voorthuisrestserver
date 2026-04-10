@@ -19,7 +19,8 @@ uses
   PrinterServerUnit in 'OverlayUnits\PrinterServerUnit.pas',
   dataBaseUnit in 'OverlayUnits\dataBaseUnit.pas',
   MailServerUnit in 'OverlayUnits\MailServerUnit.pas',
-  ServerFunctionUnit in 'OverlayUnits\ServerFunctionUnit.pas';
+  ServerFunctionUnit in 'OverlayUnits\ServerFunctionUnit.pas',
+  EASendMailObjLib_TLB in 'OverlayUnits\EASendMailObjLib_TLB.pas';
 
 {$R *.res}
 
