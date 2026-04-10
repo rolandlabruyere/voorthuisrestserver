@@ -45,22 +45,8 @@ var
   Stream: TMemoryStream;
   Url, FileName: String;
 begin
-//  Url := 'http://' + myIp + '/';
   filename := getFilename(myIp, trafoNumber);
-  sendMail(filename);
-//  Url := 'http://localhost:8080/';
-//
-//  IdHTTP1 := TIdHTTP.Create(nil);
-//  Stream := TMemoryStream.Create;
-//  try
-////    IdHTTP1.put(Url, Stream);
-//    Stream.LoadFromFile(FileName);
-//    IdHTTP1.get(Url, Stream);
-//  except
-//      on E:exception do writelog(E.Message);
-//  end;
-//  Stream.Free;
-//  IdHTTP1.Free;
-  result := Filename;
+  if sendMail(myIp, filename) = 'success' then
+    result := getScreen('downloaded');
 end;
 end.

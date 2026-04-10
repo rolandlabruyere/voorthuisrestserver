@@ -10,6 +10,7 @@ interface
   function checkUnfinishedTrafo(myIp: String): String;
   function getScreen(htmlItem: String): String;
   function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: String; allSpecs: array of String): boolean;
+  function getEmailAddress(myIp: String): String;
 
 const
   fluxDensity = 1;
@@ -89,18 +90,15 @@ begin
   customerQuery := initCustSales(customerQuery);
 
   with customerQuery do begin
-    Connection := Form1.adoVoorThuisCustomerSales;
     SQL.Clear;
     SQL.add('select * from tb200_power_trafo_config where Ip = :Ip and isClosed = false');
     Parameters.ParamByName('Ip').Value := myIp;
-  writelog('open query');
     open;
     if (recordCount = 0) then
       result := getScreen('powerTrafoSpecs')
     else
       result := getScreen('trafoFoundText');
   end;
-  writelog('einde function');
 end;
 
 function getScreen(htmlItem: String): String;
@@ -113,6 +111,21 @@ begin
     SQL.Clear;
     SQL.add('select inlineHtml from TB100_HtmlPages where id = :loadItem');
     Parameters.ParamByName('loadItem').Value := htmlItem;
+    open;
+    Result := fields[0].AsString;
+  end;
+end;
+
+function getEmailAddress(myIp: String): String;
+  var
+  customerQuery: tAdoQuery;
+begin
+  customerQuery := initCustSales(customerQuery);
+
+  with customerQuery do begin
+    SQL.Clear;
+    SQL.add('select email from tb110_address where ip = :myIp');
+    Parameters.ParamByName('myIp').Value := myIp;
     open;
     Result := fields[0].AsString;
   end;

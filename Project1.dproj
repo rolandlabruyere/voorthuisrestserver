@@ -96,7 +96,6 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <FormType>dfm</FormType>
             <DesignClass>TWebModule</DesignClass>
         </DCCReference>
-        <DCCReference Include="ServerFunctionUnit.pas"/>
         <DCCReference Include="OverlayUnits\CommonFunctionUnit.pas"/>
         <DCCReference Include="OverlayUnits\CommonProcedureUnit.pas"/>
         <DCCReference Include="OverlayUnits\JasonConstructorUnit.pas"/>
@@ -106,6 +105,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
         <DCCReference Include="OverlayUnits\PrinterServerUnit.pas"/>
         <DCCReference Include="OverlayUnits\dataBaseUnit.pas"/>
         <DCCReference Include="OverlayUnits\MailServerUnit.pas"/>
+        <DCCReference Include="OverlayUnits\ServerFunctionUnit.pas"/>
         <None Include="js\base64.js"/>
         <None Include="js\ServerFunctionExecutor.js"/>
         <None Include="js\json2.js"/>
@@ -265,7 +265,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="templates\ReverseString.html" Configuration="Release" Class="ProjectFile">
+                <DeployFile LocalName="css\main.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -277,7 +277,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="css\main.css" Configuration="Release" Class="ProjectFile">
+                <DeployFile LocalName="templates\ReverseString.html" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
