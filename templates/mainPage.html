@@ -18,8 +18,8 @@
 		var objectBin = 1;
 		var savedValues = "";
 		
-		function getPage(itemLabel, callbackDiv, passThruValue){
-			var content = serverMethods().RestDispatcher(itemLabel + "?" + formatIp(pubIp) + "?" + callbackDiv + "?" + passThruValue);
+		function getPage(itemLabel, callbackDiv, passThruValue, returnHTML){
+			var content = serverMethods().RestDispatcher(itemLabel + "?" + formatIp(pubIp) + "?" + callbackDiv + "?" + passThruValue + "?" + returnHTML);
 			var restContent = content.result.split("|");
 			document.getElementById(restContent[0]).innerHTML = restContent[1];
 		}
@@ -36,7 +36,7 @@
 
 </head>
 
-<body onload="getPage('home', 'contentDiv', '')">
+<body onload="getPage('home', 'contentDiv', '', '')">
 	<div id="menu"></div>
 	<script src='js/reactProdMin.js'></script>
 	<script src='js/react-DomProdMin.js'></script>
@@ -46,7 +46,7 @@
 		<!--<div class="vertMenuDiv" id="vertMenuDiv">vertikaal menu</div>-->
 		<div class="infoContainer" id="vertMenuDiv">vertikaal menu</div>
 		<div class="contentDiv" id="contentDiv">contentDiv</div>
-		<div id="infoDiv"></div>
+		<div id="infoDiv">dit is infodiv</div>
 	</div>
 </body>
 </html>

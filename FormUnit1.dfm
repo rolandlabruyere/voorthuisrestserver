@@ -58,11 +58,6 @@ object Form1: TForm1
     TabOrder = 3
     OnClick = ButtonOpenBrowserClick
   end
-  object ApplicationEvents1: TApplicationEvents
-    OnIdle = ApplicationEvents1Idle
-    Left = 288
-    Top = 24
-  end
   object adoVoorThuisCustomerSales: TADOConnection
     ConnectionString = 
       'Driver=MySQL ODBC 8.0 Unicode Driver;Server=Localhost;Port=3306;' +

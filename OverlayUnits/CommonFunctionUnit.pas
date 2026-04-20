@@ -24,12 +24,45 @@ interface
   function calcTurnArea(d, N: single): single;
   function getSuitableEiType(calculatedWindowsArea: single): String;
   function getCsvHeader(documentName: String): String;
-  function fetchTrafoData(myIp, trafoNumber, csvHeader: String): String;
+  function fetchTrafoData(myIp, trafoNumber, csvHeader, letterName: String): String;
+  function fetchPwTrafoMatList(myIp, trafoNumber, csvHeader: String): String;
 
 implementation
 uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
 
-function fetchTrafoData(myIp, trafoNumber, csvHeader: String): String;
+function fetchTrafoData(myIp, trafoNumber, csvHeader, letterName: String): String;
+var
+  thisQuery: tAdoQuery;
+  headerFields: TArray<String>;
+  T: integer;
+  hulp: String;
+  letterIndex: array of String;
+  sqlQuery: string;
+begin
+  thisQuery := tAdoQuery.Create(nil);
+  headerFields := csvHeader.Split([';']);
+  hulp := '';
+
+  letterIndex := ['materiaalLijst', 'wikkelschema'];
+  case IndexStr(letterName, letterIndex) of
+    0   : sqlQuery := 'select * from vw820_material_list where ip = :myIp and orderNum = :trafoNum';
+    1   : sqlQuery := 'select * from vw810_full_csv_layout_turn_schem where ip = :myIp and orderNum = :trafoNum';
+  end;
+
+  with thisQuery do begin
+    connection := Form1.adoConnHtmlPages;
+    SQL.add(sqlQuery);
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('trafoNum').Value := trafoNumber;
+    open;
+    for T := 0 to length(headerFields) - 1 do hulp := hulp + fields[T + 1].AsString.replace('.', ',') + ';';
+  end;
+
+  hulp := left(hulp, length(hulp) - 1);
+  result := hulp;
+end;
+
+function fetchPwTrafoMatList(myIp, trafoNumber, csvHeader: String): String;
 var
   thisQuery: tAdoQuery;
   headerFields: TArray<String>;
@@ -43,7 +76,7 @@ begin
   with thisQuery do begin
     connection := Form1.adoConnHtmlPages;
 
-    SQL.add('select * from vw810_full_csv_layout_turn_schem where ip = :myIp and orderNum = :trafoNum');
+    SQL.add('select * from vw820_material_list where ip = :myIp and orderNum = :trafoNum');
     Parameters.ParamByName('myIp').Value := myIp;
     Parameters.ParamByName('trafoNum').Value := trafoNumber;
     open;

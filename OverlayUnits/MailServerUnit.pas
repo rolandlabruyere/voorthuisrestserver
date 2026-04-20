@@ -26,7 +26,8 @@ begin
     oSmtp.LicenseCode := licCode;
 
     // Set your sender email address
-    oSmtp.FromAddr := 'roland.labruyere@gmail.com';
+    //oSmtp.FromAddr := 'vtfatechniek@gmail.com';
+    oSmtp.Password := 'muqv lhzw gisj rzvl';
 
     // Add recipient email address
     oSmtp.AddRecipientEx(getEmailAddress(myIp), ConnectNormal);
@@ -38,13 +39,14 @@ begin
     // Your SMTP server address
     oSmtp.ServerAddr := 'smtp.gmail.com';
     oSmtp.UserName := 'roland.labruyere@gmail.com';
-    oSmtp.Password := 'muqv lhzw gisj rzvl';
     oSmtp.ConnectType := ConnectSSLAuto;
 
     if oSmtp.SendMail() = 0 then
       result := 'success'
-    else
+    else begin
+      writelog('error: ' + oSmtp.GetLastErrDescription);
       result := 'error: ' + oSmtp.GetLastErrDescription;
+    end;
 
 end;
 

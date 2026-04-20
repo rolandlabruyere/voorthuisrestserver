@@ -3,10 +3,9 @@ unit FormUnit1;
 interface
 
 uses
-  Winapi.Messages, System.SysUtils, System.Variants,
-  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.AppEvnts, Vcl.StdCtrls, IdHTTPWebBrokerBridge, Web.HTTPApp, Data.DB,
-  Data.Win.ADODB;
+  Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls,
+  Vcl.Forms, Vcl.Dialogs, Vcl.AppEvnts, Vcl.StdCtrls, IdHTTPWebBrokerBridge, Web.HTTPApp, Data.DB,
+  Data.Win.ADODB, ComObj;
 
 type
   TIntArray = array of integer;
@@ -16,7 +15,6 @@ type
     ButtonStop: TButton;
     EditPort: TEdit;
     Label1: TLabel;
-    ApplicationEvents1: TApplicationEvents;
     ButtonOpenBrowser: TButton;
     adoVoorThuisCustomerSales: TADOConnection;
     adoConnHtmlPages: TADOConnection;
@@ -26,6 +24,7 @@ type
     procedure ButtonStopClick(Sender: TObject);
     procedure ButtonOpenBrowserClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    function  prestartWordServer(): string;
   private
     FServer: TIdHTTPWebBrokerBridge;
     procedure StartServer;
@@ -98,8 +97,9 @@ begin
     ConnectionString := custSalesConnStrng;
     Connected := true;
   end;
-//  resetSession;
-//  removeEmptyCarts;
+
+  repeat
+  until prestartWordServer = 'ok';
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -114,6 +114,23 @@ begin
     FServer.Bindings.Clear;
     FServer.DefaultPort := StrToInt(EditPort.Text);
     FServer.Active := True;
+  end;
+end;
+
+function TForm1.prestartWordServer(): string;
+var
+  wordApp, wordDoc: Variant;
+begin
+  try
+    WordApp := CreateOleObject('Word.Application');
+    WordApp.Visible := false;
+    WordDoc := WordApp.Documents.Add;
+    WordApp.ActiveDocument.SaveAs2('dummy', 17);
+    WordDoc.Close(false);
+    WordApp.Quit;
+    result := 'ok';
+  except
+    result := 'nok';
   end;
 end;
 

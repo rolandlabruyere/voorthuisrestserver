@@ -1,7 +1,7 @@
 unit PrinterServerUnit;
 
-interface uses System.SysUtils, System.Classes, System.StrUtils, system.math, Variants, CommonProcedureUnit, ComObj,
-               idHTTP, dataBaseUnit, MailServerUnit;
+interface uses System.SysUtils, System.Classes, System.StrUtils, system.math, Variants, CommonProcedureUnit,
+               CommonFunctionUnit, ComObj, dataBaseUnit, MailServerUnit;
 
   function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
   function uploadFile(myIp, trafoNumber: string): string;
@@ -13,40 +13,46 @@ implementation
     templatesMap = '\templates\doc\';
     wdExportFormatPDF = 17;
 
-  function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
-    var
-      WordApp, WordDoc: Variant;
+function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
+  var
+      wordApp, wordDoc: Variant;
       curFolder, newFileName: String;
-    begin
+  begin
       curFolder := getCurrentDir;
       newFileName := curFolder + dwnldMap + trafoNumber + '.pdf';
       filename := curFolder + templatesMap + filename;
       dataSource := curFolder + dataMap + dataSource;
 
     try
+      writeLog(generateTimestamp + ': word application starten');
       WordApp := CreateOleObject('Word.Application');
+      writeLog(generateTimestamp + ': word application gestart');
       WordApp.Visible := false;
 
-      WordDoc := WordApp.Documents.Open(filename);
+      writeLog(generateTimestamp + ': server draait op achtergrond');
+      WordDoc := WordApp.Documents.Open(filename + '.docx');
+      writeLog(generateTimestamp + ': word document geopend');
       WordDoc.MailMerge.OpenDataSource(dataSource);
+      writeLog(generateTimestamp + ': mailmerge data bron geopend');
       WordDoc.MailMerge.Execute(False);
+      writeLog(generateTimestamp + ': mailmerge uitgevoerd');
       WordApp.ActiveDocument.SaveAs2(newFileName, wdExportFormatPDF);
+      writeLog(generateTimestamp + ': document opgeslagen');
     finally
-      WordDoc.Close(False);
+      WordDoc.Close(false);
       WordApp.Quit;
     end;
     saveDocument(myIp, trafoNumber, newFileName);
     result := newFileName;
   end;
 
-function uploadFile(myIp, trafoNumber: string): string;
-var
-  IdHTTP1: TIdHTTP;
-  Stream: TMemoryStream;
-  Url, FileName: String;
-begin
-  filename := getFilename(myIp, trafoNumber);
-  if sendMail(myIp, filename) = 'success' then
-    result := getScreen('downloaded');
-end;
+
+  function uploadFile(myIp, trafoNumber: string): string;
+  var
+    Url, FileName: String;
+  begin
+    filename := getFilename(myIp, trafoNumber);
+    if sendMail(myIp, filename) = 'success' then
+      result := getScreen('downloaded');
+  end;
 end.

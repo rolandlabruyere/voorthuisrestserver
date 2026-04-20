@@ -24,30 +24,41 @@ interface
   function checkSettings(myIp: String): String;
   function showStoredSettings(myIp: String; thisQuery: tAdoQuery): String;
   function prepareTrafoSales(myIp, trafoNumber: String): String;
-  function printTurnSchematic(myIp, trafoNumber: String): String;
+  function performGenericMailMerge(myIp, trafoNumber, returnHTML, mailmergeLetter: String): String;
+  function generateMaterialList(myIp, trafoNumber, returnHTML: String): String;
+  function generateTurnSchematic(myIp, trafoNumber, returnHTML: String): String;
 
 implementation
-
-function printTurnSchematic(myIp, trafoNumber: String): String;
-var
-  returnHTML, myHeader, myData, sourceFile, curMap: String;
 
 const
   dwnldMap = '\templates\download\';
   dataMap = '\templates\data\';
   templatesMap = '\templates\doc\';
   vbCrLf = #13 + #10;
-  mailmergeLetter = 'wikkelschema.docx';
+
+function performGenericMailMerge(myIp, trafoNumber, returnHTML, mailmergeLetter: String): String;
+  var
+    myHeader, myData, sourceFile, curMap: String;
 begin
   curMap := getCurrentDir;
-  sourceFile := myIp.Replace('.', '_') + '_' + trafoNumber + '.csv';
-  myHeader := getCsvHeader('wikkelschema') + vbCrLf ;
-  myData := fetchTrafoData(myIp, trafoNumber, myHeader);
+  sourceFile :=  mailmergeLetter + '_' + trafoNumber + '.csv';
+  myHeader := getCsvHeader(mailmergeLetter) + vbCrLf ;
+  myData := fetchTrafoData(myIp, trafoNumber, myHeader, mailmergeLetter);
   writeEntireFile(curMap + dataMap + sourceFile, myHeader + myData);
-  returnHTML := getScreen('downloads');
+  returnHTML := returnHTML + '<br>' + getScreen('downloads');
   returnHTML := returnHTML.Replace(getPlaceholders('downloads'), PerformMailMerge(myIp, trafoNumber, mailmergeLetter, sourceFile));
 
   result := returnHTML;
+end;
+
+function generateMaterialList(myIp, trafoNumber, returnHTML: String): String;
+begin
+  result := performGenericMailMerge(myIp, trafoNumber, returnHTML, 'materiaalLijst');
+end;
+
+function generateTurnSchematic(myIp, trafoNumber, returnHTML: String): String;
+begin
+  result := performGenericMailMerge(myIp, trafoNumber, returnHTML, 'wikkelschema');
 end;
 
 function prepareTrafoSales(myIp, trafoNumber: String): String;
@@ -252,7 +263,6 @@ begin
   end;
 
   result := settingsHtml;
-  writelog(result);
 end;
 
 function saveSettings(myIp, fixValue: String): String;

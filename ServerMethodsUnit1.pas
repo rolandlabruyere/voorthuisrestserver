@@ -33,6 +33,7 @@ begin
         passThruItem[1] ==> ipAddress client
         passThruItem[2] ==> callback id html object
         passThruItem[3] ==> waarde tbv configuratie van trafo
+        passThruItem[4] ==> reeds aanwezige html code in een div
     }
 
   storeSessionSettings(passThruItem[1]);
@@ -40,7 +41,7 @@ begin
   menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
                 'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings', 'settings', 'powerTrafoSpecs', 'prepareSales', 'printTurnSchematic', 'clear',
                 'startDownload'];
-  writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
+  //writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
 //    11  : Result := createJsonPayment(25.00, 'VT202503120001');
 //    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
@@ -61,7 +62,8 @@ begin
     12  : Result := getScreen('settings');
     13  : Result := getScreen('powerTrafoSpecs');
     14  : Result := prepareTrafoSales(passThruItem[1], passThruItem[3]);
-    15  : Result := printTurnSchematic(passThruItem[1], passThruItem[3]);
+    15  : Result := generateTurnSchematic(passThruItem[1], passThruItem[3], passThruItem[4]);
+    //15  : Result := generateTurnSchematic(passThruItem[1], passThruItem[3]);
     16  : Result := '';
     17  : Result := uploadFile(passThruItem[1], passThruItem[3]);
 //    18  : Result := '';

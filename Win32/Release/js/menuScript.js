@@ -120,9 +120,9 @@ const Menu = ({ items }) => {
       className: `item ${active === menuIndex ? 'active' : ''}`,
       onMouseEnter: () => {setActive(menuIndex);},
       onClick: () => {
-			getPage(item.name, "contentDiv", objectBin);
-			getPage("clear", "vertMenuDiv","");
-			getPage("clear", "infoDiv","");
+			getPage(item.name, "contentDiv", objectBin, "");
+			getPage("clear", "vertMenuDiv","", "");
+			getPage("clear", "infoDiv","", "");
 			objectBin = 1;
 			savedValues = "";
 		 },
