@@ -126,7 +126,7 @@ implementation
   var
     F: TextFile;
   begin
-    AssignFile(F, 'c:\GitHub\voorthuisrestserver\log\session.log');
+    AssignFile(F, 'log\session.log');
     try
       Append(F);
     except

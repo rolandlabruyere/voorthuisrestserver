@@ -39,9 +39,9 @@ begin
   storeSessionSettings(passThruItem[1]);
 
   menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
-                'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings', 'settings', 'powerTrafoSpecs', 'prepareSales', 'printTurnSchematic', 'clear',
-                'startDownload'];
-  //writeLog(inttostr(IndexStr(passThruItem[0], menuIndex)) + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
+                'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings', 'settings', 'powerTrafoSpecs', 'prepareSales', 'printTurnSchematic', 'printMaterialList',
+                'clear', 'wikkelschema', 'materiaalLijst'];
+  writeLog(passThruItem[0] + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
 //    11  : Result := createJsonPayment(25.00, 'VT202503120001');
 //    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));
@@ -63,21 +63,10 @@ begin
     13  : Result := getScreen('powerTrafoSpecs');
     14  : Result := prepareTrafoSales(passThruItem[1], passThruItem[3]);
     15  : Result := generateTurnSchematic(passThruItem[1], passThruItem[3], passThruItem[4]);
-    //15  : Result := generateTurnSchematic(passThruItem[1], passThruItem[3]);
-    16  : Result := '';
-    17  : Result := uploadFile(passThruItem[1], passThruItem[3]);
-//    18  : Result := '';
-//    19  : Result := '';
-//    20  : Result := '';
-//    21  : Result := '';
-//    22  : Result := '';
-//    23  : Result := '';
-//    24  : Result := '';
-//    25  : Result := '';
-//    26  : Result := '';
-//    27  : Result := getScreen('logo');
-//    28  : result := getScreen('indexPageDinerCandle');
-//    29  : result := '';
+    16  : Result := generateMaterialList(passThruItem[1], passThruItem[3], passThruItem[4]);
+    17  : Result := '';
+    18  : Result := uploadFile(passThruItem[0], passThruItem[1], passThruItem[3], passThruItem[4]);
+    19  : Result := uploadFile(passThruItem[0], passThruItem[1], passThruItem[3], passThruItem[4]);
     else result := 'Geen item gevonden';
    end;
      Result := passThruItem[2] + '|' + Result;

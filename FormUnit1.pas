@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls,
   Vcl.Forms, Vcl.Dialogs, Vcl.AppEvnts, Vcl.StdCtrls, IdHTTPWebBrokerBridge, Web.HTTPApp, Data.DB,
-  Data.Win.ADODB, ComObj;
+  Data.Win.ADODB, ComObj, IWBaseComponent, IWBaseHTMLComponent,
+  IWBaseHTML40Component, IWCompExtCtrls, Vcl.ExtCtrls;
 
 type
   TIntArray = array of integer;
@@ -24,7 +25,6 @@ type
     procedure ButtonStopClick(Sender: TObject);
     procedure ButtonOpenBrowserClick(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    function  prestartWordServer(): string;
   private
     FServer: TIdHTTPWebBrokerBridge;
     procedure StartServer;
@@ -49,7 +49,7 @@ implementation
 {$R *.dfm}
 
 uses
-  WinApi.Windows, Winapi.ShellApi, Datasnap.DSSession, ServerFunctionUnit;
+  WinApi.Windows, Winapi.ShellApi, Datasnap.DSSession, ServerFunctionUnit, CommonProcedureUnit, CommonFunctionUnit;
 
 procedure TForm1.ApplicationEvents1Idle(Sender: TObject; var Done: Boolean);
 begin
@@ -97,9 +97,8 @@ begin
     ConnectionString := custSalesConnStrng;
     Connected := true;
   end;
-
-  repeat
-  until prestartWordServer = 'ok';
+  writelog(computername);
+  Buttonstartclick(sender);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -109,30 +108,10 @@ end;
 
 procedure TForm1.StartServer;
 begin
-  if not FServer.Active then
-  begin
+  if not FServer.Active then begin
     FServer.Bindings.Clear;
     FServer.DefaultPort := StrToInt(EditPort.Text);
     FServer.Active := True;
   end;
 end;
-
-function TForm1.prestartWordServer(): string;
-var
-  wordApp, wordDoc: Variant;
-begin
-  try
-    WordApp := CreateOleObject('Word.Application');
-    WordApp.Visible := false;
-    WordDoc := WordApp.Documents.Add;
-    WordApp.ActiveDocument.SaveAs2('dummy', 17);
-    WordDoc.Close(false);
-    WordApp.Quit;
-    result := 'ok';
-  except
-    result := 'nok';
-  end;
-end;
-
-
 end.

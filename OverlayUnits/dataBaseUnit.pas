@@ -5,8 +5,8 @@ interface
 
   function initCustSales(thisQuery: tAdoQuery): tAdoQuery;
   function initHtmlPages(thisQuery: tAdoQuery): tAdoQuery;
-  function getFilename(myIp, trafoNum: String): String;
-  function saveDocument(myIp, trafoNum, filePath: String): String;
+  function getFilename(myIp, trafoNum, docName: String): String;
+  function saveDocument(myIp, trafoNum, docName,filePath: String): String;
   function checkUnfinishedTrafo(myIp: String): String;
   function getScreen(htmlItem: String): String;
   function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: String; allSpecs: array of String): boolean;
@@ -34,7 +34,7 @@ begin
   result := thisQuery;
 end;
 
-function getFilename(myIp, trafoNum: String): String;
+function getFilename(myIp, trafoNum, docName: String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -42,9 +42,10 @@ begin
 
   with thisQuery do begin
     SQL.Clear;
-    SQL.add('select fullPath from tb990_paper_trail where ip =:ip and itemNumber = :itemNumber');
-    Parameters.ParamByName('ip').Value := myIp;
+    SQL.add('select fullPath from tb990_paper_trail where ip = :myIp and itemNumber = :itemNumber and docName = :docName');
+    Parameters.ParamByName('myIp').Value := myIp;
     Parameters.ParamByName('itemNumber').Value := trafoNum;
+    Parameters.ParamByName('docName').Value := docName;
     try
       open;
       Result := fields[0].AsString;
@@ -55,7 +56,7 @@ begin
 end;
 
 
-function saveDocument(myIp, trafoNum, filePath: String): String;
+function saveDocument(myIp, trafoNum, docName, filePath: String): String;
   var
   thisQuery: tAdoQuery;
 begin
@@ -63,17 +64,20 @@ begin
 
   with thisQuery do begin
     SQL.Clear;
-    SQL.add('delete from tb990_paper_trail where ip =:ip and itemNumber = :itemNumber');
+    SQL.add('delete from tb990_paper_trail where ip =:ip and itemNumber = :itemNumber and docName = :docName');
     Parameters.ParamByName('ip').Value := myIp;
     Parameters.ParamByName('itemNumber').Value := trafoNum;
+    Parameters.ParamByName('docName').Value := docName;
+
     execSql;
 
     SQL.Clear;
-    SQL.add('insert into tb990_paper_trail values (:ip, :itemNumber, :fullPath, :timestamp)');
+    SQL.add('insert into tb990_paper_trail values (:ip, :itemNumber, :docName, :fullPath, :timestamp)');
     Parameters.ParamByName('ip').Value := myIp;
     Parameters.ParamByName('itemNumber').Value := trafoNum;
     Parameters.ParamByName('fullPath').Value := filePath;
     Parameters.ParamByName('timestamp').Value := generateTimestamp;
+    Parameters.ParamByName('docName').Value := docName;
     try
       execSql;
       Result := 'ok';
@@ -84,21 +88,8 @@ begin
 end;
 
 function checkUnfinishedTrafo(myIp: String): String;
-var
-  customerQuery: tAdoQuery;
 begin
-  customerQuery := initCustSales(customerQuery);
-
-  with customerQuery do begin
-    SQL.Clear;
-    SQL.add('select * from tb200_power_trafo_config where Ip = :Ip and isClosed = false');
-    Parameters.ParamByName('Ip').Value := myIp;
-    open;
-    if (recordCount = 0) then
-      result := getScreen('powerTrafoSpecs')
-    else
-      result := getScreen('trafoFoundText');
-  end;
+   result := getScreen('powerTrafoSpecs')
 end;
 
 function getScreen(htmlItem: String): String;

@@ -38,15 +38,22 @@ const
 
 function performGenericMailMerge(myIp, trafoNumber, returnHTML, mailmergeLetter: String): String;
   var
-    myHeader, myData, sourceFile, curMap: String;
+    myHeader, myData, sourceFile, curMap, plcHolder: String;
 begin
   curMap := getCurrentDir;
+  if returnHTML.IsEmpty then returnHTML := getScreen('emptyInfoDiv');
+
+  plcHolder :=  getPlaceHolders('emptyInfoDiv');
+  writelog(plcHolder);
+  //init mailmerge
   sourceFile :=  mailmergeLetter + '_' + trafoNumber + '.csv';
   myHeader := getCsvHeader(mailmergeLetter) + vbCrLf ;
   myData := fetchTrafoData(myIp, trafoNumber, myHeader, mailmergeLetter);
   writeEntireFile(curMap + dataMap + sourceFile, myHeader + myData);
-  returnHTML := returnHTML + '<br>' + getScreen('downloads');
-  returnHTML := returnHTML.Replace(getPlaceholders('downloads'), PerformMailMerge(myIp, trafoNumber, mailmergeLetter, sourceFile));
+
+  returnHTML := StringReplace(returnHTML, plcHolder, getScreen(mailmergeLetter), [rfIgnoreCase]);
+  returnHTML := StringReplace(returnHTML, plcHolder, getScreen(mailmergeLetter + 'Show'), [rfIgnoreCase]);
+  returnHTML := returnHTML.Replace(getPlaceholders(mailmergeLetter), PerformMailMergePdfPrinter(myIp, trafoNumber, mailmergeLetter, sourceFile));
 
   result := returnHTML;
 end;

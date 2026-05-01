@@ -1,7 +1,7 @@
 unit CommonFunctionUnit;
 
 interface
-  uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, System.StrUtils, System.math;
+  uses Winapi.windows, System.Variants, System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, System.StrUtils, System.math;
 
   function storeSessionSettings(myIp: String): String;
   function updateSessionSettings(myIp: String): String;
@@ -26,9 +26,22 @@ interface
   function getCsvHeader(documentName: String): String;
   function fetchTrafoData(myIp, trafoNumber, csvHeader, letterName: String): String;
   function fetchPwTrafoMatList(myIp, trafoNumber, csvHeader: String): String;
+  function ComputerName: String;
 
 implementation
 uses FormUnit1, dialogs, CommonProcedureUnit, IOUtils;
+
+function ComputerName: String;
+var
+  buffer: array[0..255] of char;
+  size: dword;
+begin
+  size := 256;
+  if GetComputerName(buffer, size) then
+    Result := buffer
+  else
+    Result := ''
+end;
 
 function fetchTrafoData(myIp, trafoNumber, csvHeader, letterName: String): String;
 var
@@ -96,10 +109,14 @@ begin
   with thisQuery do begin
     connection := Form1.adoConnHtmlPages;
 
-    SQL.add('select header from tb800_csv_headers where docName >= :docName');
+    SQL.add('select header from tb800_csv_headers where docName = :docName');
     Parameters.ParamByName('docName').Value := documentName;
-    Open;
-    Result := fields[0].AsString;
+    try
+      open;
+      Result := fields[0].AsString;
+    except
+      on E:exception do writelog(E.Message);
+    end;
   end;
 end;
 

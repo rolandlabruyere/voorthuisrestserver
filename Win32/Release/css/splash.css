@@ -36,7 +36,18 @@ sup {
 	font-family: roboto;
 	font-style: italic;
 	color: #1d6d74;
-	/*text-shadow: 2px 2px 4px #1d6d74;*/
+	font-size: 40px;
+	text-shadow: 2px 2px 4px #0d5d64;
+}
+.subHeaderDiv {
+	position: relative;
+	top: 0;
+	left: 25;
+	font-family: roboto;
+	font-style: italic;
+	color: #1d6d74;
+	font-size: 20px;
+	text-shadow: 2px 2px 4px #0d5d64;
 }
 
 .vertMenuDiv {
@@ -192,8 +203,24 @@ button{
 }
 .dwnldButton {
 	padding: 10px 10px; 
-	background-color: #007BFF; 
+	background-color: rgb(00, 123, 255); 
 	color: white; 
 	text-decoration: none; 
 	border-radius: 5px;
+}
+.showButton {
+	padding: 10px 10px; 
+	background-color: rgb(100, 175, 123); 
+	color: white; 
+	text-decoration: none; 
+	border-radius: 5px;
+}
+
+.dwnldButtonOff {
+	padding: 10px 10px; 
+	background-color: rgb(170, 170, 170); 
+	color: white; 
+	text-decoration: none; 
+	border-radius: 5px;
+	cursor: not-allowed;
 }

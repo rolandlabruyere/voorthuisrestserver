@@ -4,7 +4,8 @@ interface uses System.SysUtils, System.Classes, System.StrUtils, system.math, Va
                CommonFunctionUnit, ComObj, dataBaseUnit, MailServerUnit;
 
   function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
-  function uploadFile(myIp, trafoNumber: string): string;
+  function performMailMergePdfPrinter(myIp, trafoNumber, filename, dataSource: String): String;
+  function uploadFile(selector, myIp, trafoNumber, returnHtml: string): string;
 
 implementation
   const
@@ -16,43 +17,65 @@ implementation
 function performMailMerge(myIp, trafoNumber, filename, dataSource: String): String;
   var
       wordApp, wordDoc: Variant;
-      curFolder, newFileName: String;
+      curFolder, newFileName, fullFilename: String;
   begin
       curFolder := getCurrentDir;
-      newFileName := curFolder + dwnldMap + trafoNumber + '.pdf';
-      filename := curFolder + templatesMap + filename;
+      newFileName := curFolder + dwnldMap + filename + '_' + trafoNumber + '.pdf';
+      fullFilename := curFolder + templatesMap + filename + '.docx';
       dataSource := curFolder + dataMap + dataSource;
 
     try
-      writeLog(generateTimestamp + ': word application starten');
       WordApp := CreateOleObject('Word.Application');
-      writeLog(generateTimestamp + ': word application gestart');
       WordApp.Visible := false;
 
-      writeLog(generateTimestamp + ': server draait op achtergrond');
-      WordDoc := WordApp.Documents.Open(filename + '.docx');
-      writeLog(generateTimestamp + ': word document geopend');
+      WordDoc := WordApp.Documents.Open(fullFilename);
       WordDoc.MailMerge.OpenDataSource(dataSource);
-      writeLog(generateTimestamp + ': mailmerge data bron geopend');
       WordDoc.MailMerge.Execute(False);
-      writeLog(generateTimestamp + ': mailmerge uitgevoerd');
       WordApp.ActiveDocument.SaveAs2(newFileName, wdExportFormatPDF);
-      writeLog(generateTimestamp + ': document opgeslagen');
     finally
       WordDoc.Close(false);
       WordApp.Quit;
     end;
-    saveDocument(myIp, trafoNumber, newFileName);
+    saveDocument(myIp, trafoNumber, filename, newFileName);
+    result := newFileName;
+  end;
+
+function performMailMergePdfPrinter(myIp, trafoNumber, filename, dataSource: String): String;
+  var
+      wordApp, wordDoc: Variant;
+      curFolder, newFileName, fullFilename: String;
+  begin
+      curFolder := getCurrentDir;
+      newFileName := curFolder + dwnldMap + filename + '_' + trafoNumber + '.pdf';
+      fullFilename := curFolder + templatesMap + filename + '.docx';
+      dataSource := curFolder + dataMap + dataSource;
+
+    try
+      WordApp := CreateOleObject('Word.Application');
+      wordApp.ActivePrinter := 'Microsoft Print to PDF';
+      WordApp.Visible := false;
+
+      WordDoc := WordApp.Documents.Open(fullFilename);
+      WordDoc.MailMerge.OpenDataSource(dataSource);
+      WordDoc.MailMerge.Execute(False);
+      WordApp.ActiveDocument.printOut(false, false, EmptyParam, newFileName);
+      WordApp.activeDocument.close(false);
+    finally
+      WordDoc.Close(false);
+      WordApp.Quit;
+    end;
+    saveDocument(myIp, trafoNumber, filename, newFileName);
     result := newFileName;
   end;
 
 
-  function uploadFile(myIp, trafoNumber: string): string;
+  function uploadFile(selector, myIp, trafoNumber, returnHtml: string): string;
   var
-    Url, FileName: String;
+    FileName, oldHtml, newHtml: String;
   begin
-    filename := getFilename(myIp, trafoNumber);
-    if sendMail(myIp, filename) = 'success' then
-      result := getScreen('downloaded');
+    filename := getFilename(myIp, trafoNumber, selector);
+
+    if sendMail(myIp, filename, selector) = 'success' then
+      result := returnHtml.Replace(getScreen(selector), getScreen(selector + '_dl'));
   end;
 end.
