@@ -1,7 +1,8 @@
 unit dataBaseUnit;
 
 interface
-  uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, CommonProcedureUnit, CommonFunctionUnit;
+  uses System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, FormUnit1, CommonProcedureUnit, CommonFunctionUnit,
+       System.StrUtils;
 
   function initCustSales(thisQuery: tAdoQuery): tAdoQuery;
   function initHtmlPages(thisQuery: tAdoQuery): tAdoQuery;
@@ -11,14 +12,18 @@ interface
   function getScreen(htmlItem: String): String;
   function saveCalculatedTrafoSpecs(myIp, thisTrafoNum: String; allSpecs: array of String): boolean;
   function getEmailAddress(myIp: String): String;
+  function checkDbSwitch(myIp, trafoNum, itemName: String): boolean;
 
-const
+  procedure setDbSwitch(myIp, trafoNum, itemName: String);
+
+  const
   fluxDensity = 1;
   filamentFiveVolts = 5;
   filamentSixVolts = 6.3;
   filamentTwelveVolts = 12.6;
 
 implementation
+ {$WARNINGS OFF}
 
 function initCustSales(thisQuery: tAdoQuery): tAdoQuery;
 begin
@@ -32,6 +37,66 @@ begin
   thisQuery := tAdoQuery.Create(nil);
   thisQuery.Connection := Form1.adoConnHtmlPages;
   result := thisQuery;
+end;
+
+function checkDbSwitch(myIp, trafoNum, itemName: String): boolean;
+  var
+  thisQuery: tAdoQuery;
+  itemIndex: array of String;
+  item: string;
+  hulp: integer;
+begin
+  thisQuery := initCustSales(thisQuery);
+  itemIndex := ['wikkelschema', 'materiaalLijst', 'offerte', 'wikkelschemaMM', 'materiaalLijstMM', 'offerteMM'];
+
+  with thisQuery do begin
+    SQL.Clear;
+    SQL.add('select hasDownlTurnSchematic, hasDownlMaterialList, hasDownlQuote, hasTurnSchematicMM, hasMaterialListMM, hasQuoteMM ' +
+            'from tb940_trafo_exportflags where ip = :myIp and trafonum = :trafonumber');
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('trafonumber').Value := trafoNum;
+    try
+      open;
+      hulp := fields[IndexStr(itemName, itemIndex)].AsInteger;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
+  if hulp = 0 then
+    result := false
+  else
+    result := true;
+end;
+
+procedure setDbSwitch(myIp, trafoNum, itemName: String);
+  var
+  thisQuery: tAdoQuery;
+  itemIndex: array of String;
+  query: string;
+begin
+  thisQuery := initCustSales(thisQuery);
+
+  itemIndex := ['wikkelschema', 'materiaalLijst', 'offerte', 'wikkelschemaMM', 'materiaalLijstMM', 'offerteMM'];
+  case IndexStr(itemName, itemIndex) of
+    0: query:= 'update tb940_trafo_exportflags set hasDownlTurnSchematic = true where ip = :myIp and trafonum = :trafonumber';
+    1: query:= 'update tb940_trafo_exportflags set hasDownlMaterialList  = true where ip = :myIp and trafonum = :trafonumber';
+    2: query:= 'update tb940_trafo_exportflags set hasDownlQuote         = true where ip = :myIp and trafonum = :trafonumber';
+    3: query:= 'update tb940_trafo_exportflags set hasTurnSchematicMM    = true where ip = :myIp and trafonum = :trafonumber';
+    4: query:= 'update tb940_trafo_exportflags set hasMaterialListMM     = true where ip = :myIp and trafonum = :trafonumber';
+    5: query:= 'update tb940_trafo_exportflags set hasQuoteMM            = true where ip = :myIp and trafonum = :trafonumber';
+  end;
+
+  with thisQuery do begin
+    SQL.Clear;
+    SQL.add(query);
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('trafonumber').Value := trafoNum;
+    try
+      execSql;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+  end;
 end;
 
 function getFilename(myIp, trafoNum, docName: String): String;
@@ -142,16 +207,24 @@ begin
     end;
 
     clear;
-    add('insert into tb210_power_trafo_calcspecs values (:myIp, :thisTrafoNum, :isClosed, :isOrdered, :hasDownloadedSchematic, :primaryVA,' +
-        ':primaryAmps, :coreArea, :turnsPerVolt, :primWireSize, :primaryTurns, :secundaryTurns, :fiftyVoltTapTurns, :secCenterTapTurns, ' +
-        ':secWireSize, :filFiveTurns, :filFiveCtTurns, :filFiveWireSize, :filSixTurns, :filSixCtTurns, :filSixWireSize, :filTwelveTurns,' +
-        ':filTwelveCtTurns, :filTwelveWireSize, :primTurnArea, :secTurnArea, :fiveVoltTurnArea, :sixVoltTurnArea, :twelveVoltTurnArea, ' +
-        ':totalTurnArea, :sizeEiSheets, :timestamp)');
+    add('delete from tb940_trafo_exportflags where ip = :myIp and trafoNum = :thisTrafoNum');
     Parameters.ParamByName('myIp').Value := myIp;
     Parameters.ParamByName('thisTrafoNum').Value := thisTrafoNum;
-    Parameters.ParamByName('isClosed').Value := false;
-    Parameters.ParamByName('isOrdered').Value := false;
-    Parameters.ParamByName('hasDownloadedSchematic').Value := false;
+    try
+      execSql;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+
+    clear;
+    add('insert into tb210_power_trafo_calcspecs values (:myIp, :thisTrafoNum, :primaryVA, :primaryAmps, :coreArea, :turnsPerVolt, ' +
+        ':primWireSize, :primaryTurns, :secundaryTurns, :fiftyVoltTapTurns, :secCenterTapTurns, :secWireSize, :filFiveTurns, ' +
+        ':filFiveCtTurns, :filFiveWireSize, :filSixTurns, :filSixCtTurns, :filSixWireSize, :filTwelveTurns, :filTwelveCtTurns, ' +
+        ':filTwelveWireSize, :primTurnArea, :secTurnArea, :fiveVoltTurnArea, :sixVoltTurnArea, :twelveVoltTurnArea, ' +
+        ':totalTurnArea, :sizeEiSheets, :timestamp)');
+
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('thisTrafoNum').Value := thisTrafoNum;
     Parameters.ParamByName('primaryVA').Value := allSpecs[0];
     Parameters.ParamByName('primaryAmps').Value := allSpecs[1];
     Parameters.ParamByName('coreArea').Value := allSpecs[2];
@@ -182,10 +255,31 @@ begin
 
     try
       execSql;
+    except
+      on E:exception do writelog(E.Message);
+    end;
+
+    clear;
+    add('insert into tb940_trafo_exportflags values (:myIp, :thisTrafoNum, :isOrdered, :hasDownlMaterialList, ' +
+        ':hasDownlTurnSchematic, :hasDownlQuote, :hasMaterialListMM, :hasTurnSchematicMM, :hasQuoteMM, :timestamp)');
+
+    Parameters.ParamByName('myIp').Value := myIp;
+    Parameters.ParamByName('thisTrafoNum').Value := thisTrafoNum;
+    Parameters.ParamByName('isOrdered').Value := false;
+    Parameters.ParamByName('hasDownlMaterialList').Value := false;
+    Parameters.ParamByName('hasDownlTurnSchematic').Value := false;
+    Parameters.ParamByName('hasDownlQuote').Value := false;
+    Parameters.ParamByName('hasMaterialListMM').Value := false;
+    Parameters.ParamByName('hasTurnSchematicMM').Value := false;
+    Parameters.ParamByName('hasQuoteMM').Value := false;
+    Parameters.ParamByName('timestamp').Value := generateTimeStamp;
+    try
+      execSql;
       result := true;
     except
       on E:exception do writelog(E.Message);
     end;
+
   end;
 end;
 

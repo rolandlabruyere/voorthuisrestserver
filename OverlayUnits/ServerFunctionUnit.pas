@@ -51,10 +51,12 @@ begin
   myData := fetchTrafoData(myIp, trafoNumber, myHeader, mailmergeLetter);
   writeEntireFile(curMap + dataMap + sourceFile, myHeader + myData);
 
-  returnHTML := StringReplace(returnHTML, plcHolder, getScreen(mailmergeLetter), [rfIgnoreCase]);
-  returnHTML := StringReplace(returnHTML, plcHolder, getScreen(mailmergeLetter + 'Show'), [rfIgnoreCase]);
-  returnHTML := returnHTML.Replace(getPlaceholders(mailmergeLetter), PerformMailMergePdfPrinter(myIp, trafoNumber, mailmergeLetter, sourceFile));
-
+  if not checkDbSwitch(myIp, trafoNumber, mailmergeLetter) then begin
+    returnHTML := StringReplace(returnHTML, plcHolder, getScreen(mailmergeLetter), [rfIgnoreCase]);
+    returnHTML := StringReplace(returnHTML, plcHolder, getScreen(mailmergeLetter + 'Show'), [rfIgnoreCase]);
+    PerformMailMergePdfPrinter(myIp, trafoNumber, mailmergeLetter, sourceFile);
+    //PerformMailMerge(myIp, trafoNumber, mailmergeLetter, sourceFile);
+  end;
   result := returnHTML;
 end;
 
@@ -560,7 +562,6 @@ begin
 
   if (storeTempTrafoSettings(myIp, 'powertrafo', '1', value) = 'ok') then begin
     trafoId := initNewPowerTrafo(myIp);
-    writelog(trafoId);
 
     with thisQuery do begin
       SQL.Clear;
@@ -752,7 +753,6 @@ begin
 
   end;
   result := StringReplace(outterHtml, placeHolder[0], cartFlexBoxContainer, [rfReplaceAll, rfIgnoreCase]);
-  writelog(result);
 end;
 
 function listGroupedInvoiceItems(sessionId: String): String;

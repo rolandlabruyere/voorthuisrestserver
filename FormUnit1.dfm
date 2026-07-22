@@ -74,4 +74,52 @@ object Form1: TForm1
     Left = 96
     Top = 160
   end
+  object IdSMTP1: TIdSMTP
+    IOHandler = IdSSLIOHandlerSocketOpenSSL1
+    AuthType = satNone
+    Host = 'smtp.gmail.com'
+    Password = 'lbyf npbp omep dgol'
+    Port = 587
+    SASLMechanisms = <>
+    UseTLS = utUseExplicitTLS
+    Username = 'voorthuismailserver'
+    ValidateAuthLoginCapability = False
+    Left = 288
+    Top = 56
+  end
+  object IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL
+    Destination = 'smtp.gmail.com:587'
+    Host = 'smtp.gmail.com'
+    MaxLineAction = maException
+    Port = 587
+    DefaultPort = 0
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 192
+    Top = 120
+  end
+  object IdMessage1: TIdMessage
+    AttachmentEncoding = 'UUE'
+    Body.Strings = (
+      'dit is een testmail')
+    BccList = <>
+    CCList = <>
+    Encoding = meDefault
+    FromList = <
+      item
+      end>
+    ReceiptRecipient.Address = 'roland.labruyere@gmail.com'
+    ReceiptRecipient.Text = 'roland.labruyere@gmail.com'
+    ReceiptRecipient.Domain = 'gmail.com'
+    ReceiptRecipient.User = 'roland.labruyere'
+    Recipients = <
+      item
+      end>
+    ReplyTo = <>
+    Subject = 'testmail'
+    ConvertPreamble = True
+    Left = 344
+    Top = 112
+  end
 end

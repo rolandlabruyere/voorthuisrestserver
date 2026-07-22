@@ -6,7 +6,10 @@ uses
   Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls,
   Vcl.Forms, Vcl.Dialogs, Vcl.AppEvnts, Vcl.StdCtrls, IdHTTPWebBrokerBridge, Web.HTTPApp, Data.DB,
   Data.Win.ADODB, ComObj, IWBaseComponent, IWBaseHTMLComponent,
-  IWBaseHTML40Component, IWCompExtCtrls, Vcl.ExtCtrls;
+  IWBaseHTML40Component, IWCompExtCtrls, Vcl.ExtCtrls, IdIOHandler,
+  IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL, IdBaseComponent,
+  IdComponent, IdTCPConnection, IdTCPClient, IdExplicitTLSClientServerBase,
+  IdMessageClient, IdSMTPBase, IdSMTP, IdMessage;
 
 type
   TIntArray = array of integer;
@@ -19,6 +22,9 @@ type
     ButtonOpenBrowser: TButton;
     adoVoorThuisCustomerSales: TADOConnection;
     adoConnHtmlPages: TADOConnection;
+    IdSMTP1: TIdSMTP;
+    IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL;
+    IdMessage1: TIdMessage;
     procedure FormCreate(Sender: TObject);
     procedure ApplicationEvents1Idle(Sender: TObject; var Done: Boolean);
     procedure ButtonStartClick(Sender: TObject);
@@ -97,7 +103,6 @@ begin
     ConnectionString := custSalesConnStrng;
     Connected := true;
   end;
-  writelog(computername);
   Buttonstartclick(sender);
 end;
 

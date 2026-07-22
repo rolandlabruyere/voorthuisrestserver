@@ -12,6 +12,12 @@ sup {
 .wrapper {
     width: 100%;
 }
+.trInfo{
+	height: 70px;
+}
+.tdInfo{
+	width: 200px;
+}
 .headerDiv {
     width: 100%;
 }
@@ -224,3 +230,8 @@ button{
 	border-radius: 5px;
 	cursor: not-allowed;
 }
+
+.columnSpacing {
+	width: 30px;
+} 
+

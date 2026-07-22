@@ -41,7 +41,7 @@ begin
   menuIndex := ['home', 'voedingstrafo', 'uitgangstrafo', 'smoorspoel', 'bedrijven', 'diversen', 'winkelwagen', 'zoeken', 'instellingen',
                 'savePtrafoSpecs', 'savePtrafoValues', 'saveSettings', 'settings', 'powerTrafoSpecs', 'prepareSales', 'printTurnSchematic', 'printMaterialList',
                 'clear', 'wikkelschema', 'materiaalLijst'];
-  writeLog(passThruItem[0] + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
+  //writeLog(passThruItem[0] + ' | ' + passThruItem[1] + ' | ' + passThruItem[2] + ' | ' + passThruItem[3]);
 
 //    11  : Result := createJsonPayment(25.00, 'VT202503120001');
 //    12  : Result := doRequest(createJsonPayment(35.00, 'VT202503120001'));

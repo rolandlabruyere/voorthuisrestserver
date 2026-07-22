@@ -32,19 +32,28 @@ function performMailMerge(myIp, trafoNumber, filename, dataSource: String): Stri
       WordDoc.MailMerge.OpenDataSource(dataSource);
       WordDoc.MailMerge.Execute(False);
       WordApp.ActiveDocument.SaveAs2(newFileName, wdExportFormatPDF);
-    finally
-      WordDoc.Close(false);
-      WordApp.Quit;
+      result := 'success'
+    except
+      on E:exception do begin
+        writelog('MailMerge failed with '+ E.ToString + ': ' + E.Message);
+        result := 'failed'
+      end;
     end;
+    WordDoc.Close(false);
+    WordApp.Quit;
+
     saveDocument(myIp, trafoNumber, filename, newFileName);
-    result := newFileName;
   end;
 
 function performMailMergePdfPrinter(myIp, trafoNumber, filename, dataSource: String): String;
   var
       wordApp, wordDoc: Variant;
-      curFolder, newFileName, fullFilename: String;
+      curFolder, newFileName, fullFilename, dbSwitch: String;
   begin
+      dbSwitch := filename + 'MM';
+
+      if checkDbSwitch(myIp, trafoNumber, dbSwitch) then exit;
+
       curFolder := getCurrentDir;
       newFileName := curFolder + dwnldMap + filename + '_' + trafoNumber + '.pdf';
       fullFilename := curFolder + templatesMap + filename + '.docx';
@@ -60,22 +69,32 @@ function performMailMerge(myIp, trafoNumber, filename, dataSource: String): Stri
       WordDoc.MailMerge.Execute(False);
       WordApp.ActiveDocument.printOut(false, false, EmptyParam, newFileName);
       WordApp.activeDocument.close(false);
-    finally
       WordDoc.Close(false);
       WordApp.Quit;
+      saveDocument(myIp, trafoNumber, filename, newFileName);
+      setDbSwitch(myIp, trafoNumber, dbSwitch);
+    except
+      on E:exception do begin
+        writelog('MailMerge failed with '+ E.ToString + ': ' + E.Message);
+        result := 'failed'
+      end;
     end;
-    saveDocument(myIp, trafoNumber, filename, newFileName);
-    result := newFileName;
+
   end;
 
 
   function uploadFile(selector, myIp, trafoNumber, returnHtml: string): string;
   var
-    FileName, oldHtml, newHtml: String;
+    FileName: String;
   begin
     filename := getFilename(myIp, trafoNumber, selector);
 
-    if sendMail(myIp, filename, selector) = 'success' then
+    if not checkDbSwitch(myIp, trafoNumber, selector) then begin
+      if sendMail(myIp, filename, selector) = 'success' then begin
+        setDbSwitch(myIp, trafoNumber, selector);
+        result := returnHtml.Replace(getScreen(selector), getScreen(selector + '_dl'))
+      end;
+    end else
       result := returnHtml.Replace(getScreen(selector), getScreen(selector + '_dl'));
   end;
 end.
